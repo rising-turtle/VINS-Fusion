@@ -95,6 +95,8 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count, const map<int, vec
     if (frame_count < 2 || last_track_num < 20 || long_track_num < 40 || new_feature_num > 0.5 * last_track_num)
         return true;
 
+    // ROS_INFO("frame_count %d last_track_num %d long_track_num %d new_feature_num %d", frame_count, last_track_num, long_track_num, new_feature_num);
+
     for (auto &it_per_id : feature)
     {
         if (it_per_id.start_frame <= frame_count - 2 &&
@@ -558,6 +560,11 @@ double FeatureManager::compensatedParallax2(const FeaturePerId &it_per_id, int f
     double du_comp = u_i_comp - u_j, dv_comp = v_i_comp - v_j;
 
     ans = max(ans, sqrt(min(du * du + dv * dv, du_comp * du_comp + dv_comp * dv_comp)));
+
+    if(abs(ans) >= 10){
+        ROS_INFO("ans = %lf, feature_id %d du = %lf dv = %lf  dep_i = %lf u_i = %lf vi = %lf u_j = %lf v_j = %lf",
+           ans, it_per_id.feature_id, du, dv, dep_i, u_i, v_i, u_j, v_j);
+    }
 
     return ans;
 }

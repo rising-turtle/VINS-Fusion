@@ -1,13 +1,9 @@
-/*******************************************************
- * Copyright (C) 2019, Aerial Robotics Group, Hong Kong University of Science and Technology
- * 
- * This file is part of VINS.
- * 
- * Licensed under the GNU General Public License v3.0;
- * you may not use this file except in compliance with the License.
- *
- * Author: Qin Tong (qintonguav@gmail.com)
- *******************************************************/
+/*
+    July 23, 2019, He Zhang, hzhang8@vcu.edu 
+
+    make it run with depth data
+
+*/
 
 #include <stdio.h>
 #include <queue>
@@ -17,11 +13,11 @@
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
-#include "estimator/estimator.h"
+#include "estimator/estimator_dpt.h"
 #include "estimator/parameters.h"
 #include "utility/visualization.h"
 
-Estimator estimator;
+EstimatorDpt estimator;
 
 queue<sensor_msgs::ImuConstPtr> imu_buf;
 queue<sensor_msgs::PointCloudConstPtr> feature_buf;
@@ -44,28 +40,6 @@ void img1_callback(const sensor_msgs::ImageConstPtr &img_msg)
     m_buf.unlock();
 }
 
-
-/*cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
-{
-    cv_bridge::CvImageConstPtr ptr;
-    if (img_msg->encoding == "8UC1")
-    {
-        sensor_msgs::Image img;
-        img.header = img_msg->header;
-        img.height = img_msg->height;
-        img.width = img_msg->width;
-        img.is_bigendian = img_msg->is_bigendian;
-        img.step = img_msg->step;
-        img.data = img_msg->data;
-        img.encoding = "mono8";
-        ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO8);
-    }
-    else
-        ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
-
-    cv::Mat img = ptr->image.clone();
-    return img;
-}*/
 
 cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
 {
@@ -105,6 +79,28 @@ cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
     return ret_img;
 }
 
+cv::Mat getDepthImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
+{
+    cv_bridge::CvImageConstPtr ptr;
+    if (img_msg->encoding == "16UC1")
+    {
+        sensor_msgs::Image img;
+        img.header = img_msg->header;
+        img.height = img_msg->height;
+        img.width = img_msg->width;
+        img.is_bigendian = img_msg->is_bigendian;
+        img.step = img_msg->step;
+        img.data = img_msg->data;
+        img.encoding = "mono16";
+        ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO16);
+    }
+    else
+        ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO16);
+
+    cv::Mat img = ptr->image.clone();
+    return img;
+}
+
 
 // extract images with same timestamp from two topics
 void sync_process()
@@ -138,14 +134,14 @@ void sync_process()
                     header = img0_buf.front()->header;
                     image0 = getImageFromMsg(img0_buf.front());
                     img0_buf.pop();
-                    image1 = getImageFromMsg(img1_buf.front());
+                    image1 = getDepthImageFromMsg(img1_buf.front());
                     img1_buf.pop();
                     //printf("find img0 and img1\n");
                 }
             }
             m_buf.unlock();
             if(!image0.empty())
-                estimator.inputImage(time, image0, image1);
+                estimator.inputImageDpt(time, image0, image1);
         }
         else
         {
@@ -174,9 +170,9 @@ void sync_process()
 void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
 {
     double t = imu_msg->header.stamp.toSec();
-    double dx = imu_msg->linear_acceleration.x; //*(-9.8);
-    double dy = imu_msg->linear_acceleration.y; // *(-9.8);
-    double dz = imu_msg->linear_acceleration.z; // *(-9.8);
+    double dx = imu_msg->linear_acceleration.x*(-9.8); // structure core's IMU's g points downward 
+    double dy = imu_msg->linear_acceleration.y*(-9.8);
+    double dz = imu_msg->linear_acceleration.z*(-9.8); // since the unit of acc is g
     double rx = imu_msg->angular_velocity.x;
     double ry = imu_msg->angular_velocity.y;
     double rz = imu_msg->angular_velocity.z;
@@ -268,8 +264,8 @@ int main(int argc, char **argv)
 
     if(argc != 2)
     {
-        printf("please intput: rosrun vins vins_node [config file] \n"
-               "for example: rosrun vins vins_node "
+        printf("please intput: rosrun vins vins_node_dpt [config file] \n"
+               "for example: rosrun vins vins_node_dpt "
                "~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_imu_config.yaml \n");
         return 1;
     }
@@ -279,9 +275,6 @@ int main(int argc, char **argv)
 
     readParameters(config_file);
     estimator.setParameter();
-
-    cout<<"RIC[0] "<<endl<<RIC[0]<<endl;
-    cout<<"TIC[0] "<<endl<<TIC[0]<<endl;
 
 #ifdef EIGEN_DONT_PARALLELIZE
     ROS_DEBUG("EIGEN_DONT_PARALLELIZE");

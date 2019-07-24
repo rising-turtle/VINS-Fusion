@@ -36,6 +36,8 @@ catkin_package()
 add_library(vins_lib
     src/estimator/parameters.cpp
     src/estimator/estimator.cpp
+    src/estimator/estimator_dpt.cpp
+    src/estimator/handle_struct_core.cpp
     src/estimator/feature_manager.cpp
     src/factor/pose_local_parameterization.cpp
     src/factor/projectionTwoFrameOneCamFactor.cpp
@@ -52,6 +54,11 @@ add_library(vins_lib
     src/featureTracker/feature_tracker.cpp)
 target_link_libraries(vins_lib ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
+add_executable(vins_node_dpt src/rosNodeTestDpt.cpp)
+target_link_libraries(vins_node_dpt vins_lib)
+
+add_executable(test_cam src/test_cam.cpp)
+target_link_libraries(test_cam vins_lib)
 
 add_executable(vins_node src/rosNodeTest.cpp)
 target_link_libraries(vins_node vins_lib) 
