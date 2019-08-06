@@ -16,7 +16,7 @@ extern void handle_rgb(const cv::Mat& rgb, cv::Mat& rgb_out);
 EstimatorDpt::EstimatorDpt(){
 
 	// TODO: parameterize this 
-	mbf = 0.1 * 444.277; //featureTracker.m_camera[0]->fx;
+	mbf = 0.1 * 444.277; // 532.388672; // 444.277; //featureTracker.m_camera[0]->fx;
 }
 
 EstimatorDpt::~EstimatorDpt(){}
@@ -35,6 +35,8 @@ void EstimatorDpt::inputImageDpt(double t, const cv::Mat &_img, const cv::Mat &d
     else{
     	handle_rgb(_img, img_undist);
     	handle_dpt(dpt, dpt_align);
+        // img_undist = _img.clone(); 
+        // dpt_align = dpt.clone();
         featureFrame = featureTracker.trackImageDpt(t, mbf, img_undist, dpt_align);
     }
     //printf("featureTracker time: %f\n", featureTrackerTime.toc());
