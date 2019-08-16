@@ -4,7 +4,7 @@ project(vins)
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++11")
 #-DEIGEN_USE_MKL_ALL")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w -g")
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
@@ -14,7 +14,9 @@ find_package(catkin REQUIRED COMPONENTS
     tf
     cv_bridge
     camera_models
-    image_transport)
+    image_transport
+    pcl_conversions
+    pcl_ros)
 
 find_package(OpenCV REQUIRED)
 
@@ -23,6 +25,7 @@ find_package(OpenCV REQUIRED)
 find_package(Ceres REQUIRED)
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
+include_directories("/home/davidz/work/ros/kinetic/src/plane_model/peac")
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(Eigen3)
@@ -51,8 +54,9 @@ add_library(vins_lib
     src/initial/initial_aligment.cpp
     src/initial/initial_sfm.cpp
     src/initial/initial_ex_rotation.cpp
-    src/featureTracker/feature_tracker.cpp)
-target_link_libraries(vins_lib ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+    src/featureTracker/feature_tracker.cpp
+    src/featureTracker/feature_tracker_people_mask.cpp)
+target_link_libraries(vins_lib mask_people ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 add_executable(vins_node_dpt src/rosNodeTestDpt.cpp)
 target_link_libraries(vins_node_dpt vins_lib)

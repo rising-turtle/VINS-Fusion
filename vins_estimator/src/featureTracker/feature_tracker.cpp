@@ -52,6 +52,8 @@ FeatureTracker::FeatureTracker()
     hasPrediction = false;
 }
 
+FeatureTracker::~FeatureTracker(){}
+
 void FeatureTracker::setMask()
 {
     mask = cv::Mat(row, col, CV_8UC1, cv::Scalar(255));

@@ -64,3 +64,5 @@ void pubKeyframe(const Estimator &estimator);
 void pubRelocalization(const Estimator &estimator);
 
 void pubCar(const Estimator & estimator, const std_msgs::Header &header);
+
+void pubMaskImage(const cv::Mat& mask, const double t);

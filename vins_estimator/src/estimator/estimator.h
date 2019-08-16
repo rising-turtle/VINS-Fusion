@@ -35,7 +35,7 @@
 #include "../factor/projectionTwoFrameTwoCamFactor.h"
 #include "../factor/projectionOneFrameTwoCamFactor.h"
 #include "../featureTracker/feature_tracker.h"
-
+#include "../featureTracker/feature_tracker_people_mask.h"
 
 class Estimator
 {
@@ -103,7 +103,8 @@ class Estimator
     std::thread trackThread;
     std::thread processThread;
 
-    FeatureTracker featureTracker;
+    // FeatureTracker featureTracker;
+    FeatureTrackerMask featureTracker;
 
     SolverFlag solver_flag;
     MarginalizationFlag  marginalization_flag;
