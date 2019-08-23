@@ -10,6 +10,7 @@
 #pragma once
 
 #include "feature_tracker.h"
+#include <sensor_msgs/PointCloud2.h>
 
 class MaskPeople; 
 
@@ -23,4 +24,5 @@ public:
 	virtual map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> trackImageDpt(double _cur_time, float mbf, const cv::Mat &_img, const cv::Mat &_img1 = cv::Mat());
 
 	MaskPeople* mpMaskPeople; 
+	sensor_msgs::PointCloud2 mask_pc; // masked point cloud 
 };

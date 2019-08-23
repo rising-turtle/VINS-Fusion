@@ -28,6 +28,7 @@
 #include "../estimator/estimator.h"
 #include "../estimator/parameters.h"
 #include <fstream>
+#include <sensor_msgs/PointCloud2.h>
 
 extern ros::Publisher pub_odometry;
 extern ros::Publisher pub_path, pub_pose;
@@ -66,3 +67,5 @@ void pubRelocalization(const Estimator &estimator);
 void pubCar(const Estimator & estimator, const std_msgs::Header &header);
 
 void pubMaskImage(const cv::Mat& mask, const double t);
+
+void pubMaskPC(sensor_msgs::PointCloud2& mask_pc, const double t);

@@ -25,6 +25,7 @@ ros::Publisher pub_extrinsic;
 
 ros::Publisher pub_image_track;
 ros::Publisher pub_image_mask;
+ros::Publisher pub_mask_pc;
 
 CameraPoseVisualization cameraposevisual(1, 0, 0, 1);
 static double sum_of_path = 0;
@@ -48,6 +49,7 @@ void registerPub(ros::NodeHandle &n)
     pub_image_track = n.advertise<sensor_msgs::Image>("image_track", 1000);
 
     pub_image_mask = n.advertise<sensor_msgs::Image>("image_mask", 1000);
+    pub_mask_pc = n.advertise<sensor_msgs::PointCloud2>("mask_pc", 1000);
 
     cameraposevisual.setScale(0.1);
     cameraposevisual.setLineWidth(0.01);
@@ -69,6 +71,13 @@ void pubLatestOdometry(const Eigen::Vector3d &P, const Eigen::Quaterniond &Q, co
     odometry.twist.twist.linear.y = V.y();
     odometry.twist.twist.linear.z = V.z();
     pub_latest_odometry.publish(odometry);
+}
+
+void pubMaskPC(sensor_msgs::PointCloud2& pc, const double t)
+{
+    pc.header.stamp = ros::Time(t); 
+    pc.header.frame_id = "camera"; 
+    pub_mask_pc.publish(pc); 
 }
 
 void pubTrackImage(const cv::Mat &imgTrack, const double t)

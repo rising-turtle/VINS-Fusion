@@ -129,11 +129,16 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTrackerMask::tra
 
         // cv::Mat mask_p; 
 
-        mpMaskPeople->getMask(cur_img, dptImg, mask_p, 10); 
-       	setMaskP(mask_p);
+        mpMaskPeople->getMask(cur_img, dptImg, mask_p, 10);
+        {
+            // show masked point cloud 
+       	    mpMaskPeople->getMaskPts(cur_img, dptImg, mask_p, mask_pc);
+        }
+        setMaskP(mask_p);
+
+
 
         ROS_DEBUG("set mask costs %fms", t_m.toc());
-
         ROS_DEBUG("detect feature begins");
         TicToc t_t;
         int n_max_cnt = MAX_CNT - static_cast<int>(cur_pts.size());
