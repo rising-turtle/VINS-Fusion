@@ -132,7 +132,9 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTrackerMask::tra
         mpMaskPeople->getMask(cur_img, dptImg, mask_p, 10);
         {
             // show masked point cloud 
-       	    mpMaskPeople->getMaskPts(cur_img, dptImg, mask_p, mask_pc);
+            cv::Mat cur_rgb_img; 
+            cv::cvtColor(cur_img, cur_rgb_img, cv::COLOR_GRAY2RGB);
+       	    mpMaskPeople->getMaskPts(cur_rgb_img, dptImg, mask_p, mask_pc);
         }
         setMaskP(mask_p);
 

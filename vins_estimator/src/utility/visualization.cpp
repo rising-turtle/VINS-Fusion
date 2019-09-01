@@ -25,6 +25,7 @@ ros::Publisher pub_extrinsic;
 
 ros::Publisher pub_image_track;
 ros::Publisher pub_image_mask;
+ros::Publisher pub_image_depth;
 ros::Publisher pub_mask_pc;
 
 CameraPoseVisualization cameraposevisual(1, 0, 0, 1);
@@ -50,6 +51,8 @@ void registerPub(ros::NodeHandle &n)
 
     pub_image_mask = n.advertise<sensor_msgs::Image>("image_mask", 1000);
     pub_mask_pc = n.advertise<sensor_msgs::PointCloud2>("mask_pc", 1000);
+
+    pub_image_depth = n.advertise<sensor_msgs::Image>("image_depth", 1000);
 
     cameraposevisual.setScale(0.1);
     cameraposevisual.setLineWidth(0.01);
@@ -96,6 +99,15 @@ void pubMaskImage(const cv::Mat& mask, const double t)
     header.stamp = ros::Time(t);
     sensor_msgs::ImagePtr imgMask = cv_bridge::CvImage(header, "mono8", mask).toImageMsg();
     pub_image_mask.publish(imgMask);
+}
+
+void pubDepthImage(const cv::Mat& img, const double t)
+{
+    std_msgs::Header header;
+    header.frame_id = "world";
+    header.stamp = ros::Time(t);
+    sensor_msgs::ImagePtr imgMask = cv_bridge::CvImage(header, "mono16", img).toImageMsg();
+    pub_image_depth.publish(imgMask);
 }
 
 

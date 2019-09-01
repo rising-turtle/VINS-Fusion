@@ -68,4 +68,6 @@ void pubCar(const Estimator & estimator, const std_msgs::Header &header);
 
 void pubMaskImage(const cv::Mat& mask, const double t);
 
+void pubDepthImage(const cv::Mat& img, const double t);
+
 void pubMaskPC(sensor_msgs::PointCloud2& mask_pc, const double t);

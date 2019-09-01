@@ -18,6 +18,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
+#include <ros/ros.h>
 
 using namespace std; 
 using namespace cv; 
@@ -35,7 +36,7 @@ void handle_rgb(const cv::Mat& rgb, cv::Mat& rgb_out)
 
   cv::undistort(rgb, rgb_out, cameraMatrix, distCoeffs); 
 
-  // ROS_DEBUG("align_struct_core: rgb_out size %d x %d", rgb_out.cols, rgb_out.rows); 
+  ROS_DEBUG("align_struct_core: rgb_out size %d x %d", rgb_out.cols, rgb_out.rows); 
 }
 
 void handle_dpt(const cv::Mat& dpt, cv::Mat& dpt_out)
@@ -167,5 +168,6 @@ void handle_dpt(const cv::Mat& dpt, cv::Mat& dpt_out)
 
   // convert 
   dpt_dis.convertTo(dpt_out, CV_16UC1, 1000);
+  ROS_DEBUG("align_struct_core: dpt_out size %d x %d", dpt_out.cols, dpt_out.rows); 
   return ;  
 }

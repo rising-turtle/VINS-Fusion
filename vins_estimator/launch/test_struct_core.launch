@@ -1,0 +1,4 @@
+<launch>
+    <node name="test_struct_core" pkg="vins" type="test_struct_core" output="screen"/>
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vins)/../config/mask_pc.rviz" />
+</launch>

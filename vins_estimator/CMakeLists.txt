@@ -61,6 +61,9 @@ target_link_libraries(vins_lib mask_people ${catkin_LIBRARIES} ${OpenCV_LIBS} ${
 add_executable(vins_node_dpt src/rosNodeTestDpt.cpp)
 target_link_libraries(vins_node_dpt vins_lib)
 
+add_executable(test_struct_core src/estimator/test_struct_core.cpp)
+target_link_libraries(test_struct_core vins_lib)
+
 add_executable(test_cam src/test_cam.cpp)
 target_link_libraries(test_cam vins_lib)
 
