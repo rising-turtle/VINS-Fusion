@@ -66,8 +66,8 @@ cv::Mat getImageFromMsg(const sensor_msgs::ImageConstPtr &img_msg)
         img.is_bigendian = img_msg->is_bigendian;
         img.step = img_msg->step;
         img.data = img_msg->data;
-        img.encoding = "bgr8";
-        ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8);
+        img.encoding = "bgr8"; // bgr
+        ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::BGR8); // RGB
         ret_img = ptr->image.clone(); 
         // cv::cvtColor(ret_img, ret_img, cv::COLOR_BGR2GRAY);
     }
@@ -174,8 +174,6 @@ void handleImageDpt(double t, const cv::Mat &_img, const cv::Mat &dpt)
 
     handle_rgb(_img, img_undist);
     handle_dpt(dpt, dpt_align);
-
-    ROS_INFO("arrive here!");
 
     pubTrackImage(img_undist, t); 
     pubDepthImage(dpt_align, t);
