@@ -45,10 +45,10 @@ void EstimatorDpt::inputImageDpt(double t, const cv::Mat &_img, const cv::Mat &d
     {
         cv::Mat imgTrack = featureTracker.getTrackImage();
         pubTrackImage(imgTrack, t);
-        if(!featureTracker.mask_p.empty()){
-            pubMaskImage(featureTracker.mask_p, t);
-            pubMaskPC(featureTracker.mask_pc, t);
-        }
+        // if(!featureTracker.mask_p.empty()){
+        //    pubMaskImage(featureTracker.mask_p, t);
+            // pubMaskPC(featureTracker.mask_pc, t);
+        //}
     }
     
     if(MULTIPLE_THREAD)  

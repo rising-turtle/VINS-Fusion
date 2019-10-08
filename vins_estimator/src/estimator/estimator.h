@@ -103,8 +103,8 @@ class Estimator
     std::thread trackThread;
     std::thread processThread;
 
-    // FeatureTracker featureTracker;
-    FeatureTrackerMask featureTracker;
+    FeatureTracker featureTracker;
+    // FeatureTrackerMask featureTracker;
 
     SolverFlag solver_flag;
     MarginalizationFlag  marginalization_flag;
