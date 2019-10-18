@@ -282,6 +282,11 @@ int main(int argc, char **argv)
 
     ROS_WARN("waiting for image and imu...");
 
+    n.param("camera_calibrated", estimator.mb_calibrated, estimator.mb_calibrated); 
+    if(estimator.mb_calibrated){
+        ROS_DEBUG("rosNodeTestDpt.cpp: camera data has been calibrated, no further handle is needed!");
+    }
+
     registerPub(n);
 
     ros::Subscriber sub_imu = n.subscribe(IMU_TOPIC, 2000, imu_callback, ros::TransportHints().tcpNoDelay());

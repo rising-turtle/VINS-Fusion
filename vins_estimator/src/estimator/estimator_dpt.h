@@ -21,4 +21,6 @@ public:
 
 	float mbf; // base line * fx 
 
+	bool mb_calibrated; // whether the camera data has been calibrated 
+
 };

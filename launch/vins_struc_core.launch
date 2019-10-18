@@ -1,0 +1,6 @@
+<launch>
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vins)/../launch/struct_core_config.rviz" />
+    <node pkg="vins" type="vins_node_dpt" name="vins_estimator" output="screen" args="$(find vins)/../config/struct_core_cal/struct_core.yaml">
+	<param name="camera_calibrated" type="bool" value="true"/>
+    </node>
+</launch>

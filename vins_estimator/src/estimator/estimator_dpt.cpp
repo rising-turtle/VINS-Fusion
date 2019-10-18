@@ -17,6 +17,7 @@ EstimatorDpt::EstimatorDpt(){
 
 	// TODO: parameterize this 
 	mbf = 0.1 * 444.277; // 532.388672; // 444.277; //featureTracker.m_camera[0]->fx;
+    mb_calibrated = false; 
 }
 
 EstimatorDpt::~EstimatorDpt(){}
@@ -33,8 +34,16 @@ void EstimatorDpt::inputImageDpt(double t, const cv::Mat &_img, const cv::Mat &d
         featureFrame = featureTracker.trackImage(t, _img);
     }
     else{
-    	handle_rgb(_img, img_undist);
-    	handle_dpt(dpt, dpt_align);
+
+        if(!mb_calibrated)
+        {
+    	   handle_rgb(_img, img_undist);
+    	   handle_dpt(dpt, dpt_align);
+        }else{
+            img_undist = _img.clone(); 
+            dpt_align = dpt.clone();
+        }
+
         // img_undist = _img.clone(); 
         // dpt_align = dpt.clone();
         featureFrame = featureTracker.trackImageDpt(t, mbf, img_undist, dpt_align);
