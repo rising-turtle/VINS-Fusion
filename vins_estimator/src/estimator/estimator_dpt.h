@@ -19,6 +19,8 @@ public:
 
 	void inputImageDpt(double t, const cv::Mat &_img, const cv::Mat &dpt = cv::Mat());
 
+	void setParameter(); // need to set mbf, according to different camera intrinsic parameters
+
 	float mbf; // base line * fx 
 
 	bool mb_calibrated; // whether the camera data has been calibrated 

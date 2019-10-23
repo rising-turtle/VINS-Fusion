@@ -88,6 +88,11 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count, const map<int, vec
             if( it-> feature_per_frame.size() >= 4)
                 long_track_num++;
         }
+
+        // if(frame_count == 0)
+        //    cout<<"feature id: "<<feature_id<<" nor_ui: "<<id_pts.second[0].second(0)<<" nor_vi: "
+        //        <<id_pts.second[0].second(1)<<" ui: "<<id_pts.second[0].second(3)<< " vi: "<<
+        //        id_pts.second[0].second(4)<<" zi: "<<id_pts.second[0].second(2)<<endl;
     }
 
     //if (frame_count < 2 || last_track_num < 20)
@@ -267,10 +272,18 @@ void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs
         vector<cv::Point3f> pts3D;
         for (auto &it_per_id : feature)
         {
+            // if(it_per_id.feature_id == 1)
+            //     it_per_id.print();
+
+            // if(frameCnt == 1 && it_per_id.feature_id > 150){
+            //     cout<<" feature_id: "<<it_per_id.feature_id<<" estimated_depth: "<<it_per_id.estimated_depth<<endl; 
+            // }
+
             if (it_per_id.estimated_depth > 0)
             {
                 int index = frameCnt - it_per_id.start_frame;
-                if((int)it_per_id.feature_per_frame.size() >= index + 1)
+                // if((int)it_per_id.feature_per_frame.size() >= index + 1)
+                if(((int)it_per_id.feature_per_frame.size() >= index + 1) && index >= 1)
                 {
                     Vector3d ptsInCam = ric[0] * (it_per_id.feature_per_frame[0].point * it_per_id.estimated_depth) + tic[0];
                     Vector3d ptsInWorld = Rs[it_per_id.start_frame] * ptsInCam + Ps[it_per_id.start_frame];
@@ -279,6 +292,9 @@ void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs
                     cv::Point2f point2d(it_per_id.feature_per_frame[index].point.x(), it_per_id.feature_per_frame[index].point.y());
                     pts3D.push_back(point3d);
                     pts2D.push_back(point2d); 
+                    if(frameCnt == 1){
+                        cout <<" feature id: "<<it_per_id.feature_id<<" pts3D: "<<ptsInWorld.transpose()<<" pts2D: "<<point2d.x<<" "<<point2d.y<<endl; 
+                    }
                 }
             }
         }
@@ -288,6 +304,10 @@ void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs
         RCam = Rs[frameCnt - 1] * ric[0];
         PCam = Rs[frameCnt - 1] * tic[0] + Ps[frameCnt - 1];
 
+        if(frameCnt == 1){
+            cout<<"Rcam: "<<endl<<RCam<<" PCam: "<<PCam.transpose()<<endl;
+        }
+
         if(solvePoseByPnP(RCam, PCam, pts2D, pts3D))
         {
             // trans to w_T_imu
@@ -295,8 +315,8 @@ void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs
             Ps[frameCnt] = -RCam * ric[0].transpose() * tic[0] + PCam;
 
             Eigen::Quaterniond Q(Rs[frameCnt]);
-            //cout << "frameCnt: " << frameCnt <<  " pnp Q " << Q.w() << " " << Q.vec().transpose() << endl;
-            //cout << "frameCnt: " << frameCnt << " pnp P " << Ps[frameCnt].transpose() << endl;
+            cout << "frameCnt: " << frameCnt <<  " pnp Q " << Q.w() << " " << Q.vec().transpose() << endl;
+            cout << "frameCnt: " << frameCnt << " pnp P " << Ps[frameCnt].transpose() << endl;
         }
     }
 }
@@ -307,6 +327,11 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
     {
         if (it_per_id.estimated_depth > 0)
             continue;
+
+        if(it_per_id.feature_id == 152){
+            cout<<"feature_manager.cpp: print info of feature id: "<<it_per_id.feature_id<<endl;
+            it_per_id.print();
+        }
 
         if(STEREO && it_per_id.feature_per_frame[0].is_stereo)
         {
@@ -336,6 +361,17 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
             Eigen::Vector3d localPoint;
             localPoint = leftPose.leftCols<3>() * point3d + leftPose.rightCols<1>();
             double depth = localPoint.z();
+
+            if(it_per_id.feature_id == 152){
+                cout <<" feature_manager.cpp: debug feature_id = 1"<<endl; 
+                cout << "left pose " << leftPose << endl;
+                cout << "right pose " << rightPose << endl;
+                cout << "point0 " << point0.transpose() << endl;
+                cout << "point1 " << point1.transpose() << endl;
+                cout << "point3d in world: "<<point3d.transpose()<<endl; 
+                cout << "point3d in local: "<<localPoint.transpose()<<endl; 
+            }
+
             if (depth > 0)
                 it_per_id.estimated_depth = depth;
             else
@@ -345,6 +381,9 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
             printf("stereo %d pts: %f %f %f gt: %f %f %f \n",it_per_id.feature_id, point3d.x(), point3d.y(), point3d.z(),
                                                             ptsGt.x(), ptsGt.y(), ptsGt.z());
             */
+            // printf("stereo %d pts: %f %f %f depth: %f \n",it_per_id.feature_id, point3d.x(), point3d.y(), 
+            //                                        point3d.z(), it_per_id.estimated_depth);
+            
             continue;
         }
         else if(it_per_id.feature_per_frame.size() > 1)
@@ -374,12 +413,16 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
             if (depth > 0)
                 it_per_id.estimated_depth = depth;
             else
-                it_per_id.estimated_depth = INIT_DEPTH;
-            /*
-            Vector3d ptsGt = pts_gt[it_per_id.feature_id];
-            printf("motion  %d pts: %f %f %f gt: %f %f %f \n",it_per_id.feature_id, point3d.x(), point3d.y(), point3d.z(),
-                                                            ptsGt.x(), ptsGt.y(), ptsGt.z());
-            */
+                it_per_id.estimated_depth = -1; // INIT_DEPTH;
+            
+            // Vector3d ptsGt = pts_gt[it_per_id.feature_id];
+            // printf("motion  %d pts: %f %f %f gt: %f %f %f \n",it_per_id.feature_id, point3d.x(), point3d.y(), point3d.z(),
+            //                                                ptsGt.x(), ptsGt.y(), ptsGt.z());
+            //printf("motion %d pts: %f %f %f depth: %f \n",it_per_id.feature_id, point3d.x(), point3d.y(), 
+            //                                        point3d.z(), it_per_id.estimated_depth);
+            printf("motion %d pts: %f %f %f depth: %f \n",it_per_id.feature_id, it_per_id.feature_per_frame[0].point[0],
+                     it_per_id.feature_per_frame[0].point[1], it_per_id.feature_per_frame[0].point[2], it_per_id.estimated_depth);
+
             continue;
         }
         it_per_id.used_num = it_per_id.feature_per_frame.size();
@@ -428,7 +471,10 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
         {
             it_per_id.estimated_depth = INIT_DEPTH;
         }
-
+        // Vector3d ptsGt = pts_gt[it_per_id.feature_id];
+        // printf("motion  %d pts: %f %f %f gt: %f %f %f \n",it_per_id.feature_id, point3d.x(), point3d.y(), point3d.z(),
+        //                                                    ptsGt.x(), ptsGt.y(), ptsGt.z());
+        printf("motion_2 %d depth: %f \n",it_per_id.feature_id, it_per_id.estimated_depth);            
     }
 }
 

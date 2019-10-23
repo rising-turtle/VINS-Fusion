@@ -119,6 +119,25 @@ void Estimator::setParameter()
     mProcess.unlock();
 }
 
+
+void Estimator::showStatus()
+{
+    cout<<"estimator.cpp: showStatus: Poses: "<<endl; 
+    for(int i=0; i<=frame_count; i++){
+        cout << "Ps["<<i<<"]:"<< Ps[i].transpose()<<endl;
+    }
+    for(int i=0; i<=frame_count; i++){
+        cout << "Vs["<<i<<"]:"<< Vs[i].transpose()<<endl;
+    }
+    for(int i=0; i<=frame_count; i++){
+        cout << "Ba["<<i<<"]:"<< Bas[i].transpose()<<endl;
+    }
+    for(int i=0; i<=frame_count; i++){
+        cout << "Bg["<<i<<"]:"<< Bgs[i].transpose()<<endl;
+    }
+
+}
+
 void Estimator::changeSensorType(int use_imu, int use_stereo)
 {
     bool restart = false;
@@ -177,7 +196,7 @@ void Estimator::inputImage(double t, const cv::Mat &_img, const cv::Mat &_img1)
     
     if(MULTIPLE_THREAD)  
     {     
-        if(inputImageCnt % 2 == 0)
+        if(inputImageCnt % 2 == 0) // TODO: recover this
         {
             mBuf.lock();
             featureBuf.push(make_pair(t, featureFrame));
@@ -406,8 +425,8 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
 
 void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image, const double header)
 {
-    ROS_DEBUG("new image coming ------------------------------------------");
-    ROS_DEBUG("Adding feature points %lu", image.size());
+    // ROS_DEBUG("new image coming ------------------------------------------");
+    ROS_DEBUG("timestamp %lf with feature points %lu", header, image.size());
     if (f_manager.addFeatureCheckParallax(frame_count, image, td))
     {
         marginalization_flag = MARGIN_OLD;
@@ -419,7 +438,7 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
         //printf("non-keyframe\n");
     }
 
-    ROS_DEBUG("%s", marginalization_flag ? "Non-keyframe" : "Keyframe");
+    ROS_INFO("handle frame at timestamp %lf is a %s", header, marginalization_flag ? "Non-keyframe" : "Keyframe");
     ROS_DEBUG("Solving %d", frame_count);
     ROS_DEBUG("number of feature: %d", f_manager.getFeatureCount());
     Headers[frame_count] = header;
@@ -496,6 +515,7 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
                 optimization();
                 slideWindow();
                 ROS_INFO("Initialization finish!");
+                showStatus();
             }
         }
 

@@ -51,6 +51,9 @@ class FeaturePerFrame
         velocityRight.y() = _point(6); 
         is_stereo = true;
     }
+    void print(){
+        printf("point: %f %f %f uv: %f %f \n", point.x(), point.y(), point.z(), uv.x(), uv.y());
+    }
     double cur_td;
     Vector3d point, pointRight;
     Vector2d uv, uvRight;
@@ -75,6 +78,11 @@ class FeaturePerId
     }
 
     int endFrame();
+    void print(){
+        printf("feature id: %d start_frame: %d used_num: %d estimated_depth: %lf \n", feature_id, start_frame, used_num, estimated_depth);
+        for(int i=0; i<feature_per_frame.size(); i++)
+            feature_per_frame[i].print();
+    }
 };
 
 class FeatureManager

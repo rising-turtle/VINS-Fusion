@@ -15,12 +15,25 @@ extern void handle_rgb(const cv::Mat& rgb, cv::Mat& rgb_out);
 
 EstimatorDpt::EstimatorDpt(){
 
-	// TODO: parameterize this 
-	mbf = 0.1 * 444.277; // 532.388672; // 444.277; //featureTracker.m_camera[0]->fx;
+	// need to set parameterize for this 
+	mbf = -1.;  // 0.1 * 444.277; // 532.388672; // 444.277; //featurbeTracker.m_camera[0]->fx;
     mb_calibrated = false; 
+    cout << "estimator_dpt.cpp: mbf = "<<mbf<<" need to set explicitly!"<<endl;
 }
 
 EstimatorDpt::~EstimatorDpt(){}
+
+void EstimatorDpt::setParameter()
+{
+    Estimator::setParameter();
+    std::vector<double> parameterVec; 
+    featureTracker.m_camera[0]->writeParameters(parameterVec); 
+    // k1, k2, p1, p2, fx, fy, cx, cy
+    double fx = parameterVec[4]; 
+    mbf = 0.1*fx; 
+    cout << "estimator_dpt.cpp: rig length: 0.1 m, fx: "<< fx<<" mbf: "<<mbf<<endl; 
+
+}
 
 void EstimatorDpt::inputImageDpt(double t, const cv::Mat &_img, const cv::Mat &dpt)
 {
@@ -62,7 +75,7 @@ void EstimatorDpt::inputImageDpt(double t, const cv::Mat &_img, const cv::Mat &d
     
     if(MULTIPLE_THREAD)  
     {     
-        if(inputImageCnt % 2 == 0)
+        // if(inputImageCnt % 2 == 0)
         {
             mBuf.lock();
             featureBuf.push(make_pair(t, featureFrame));

@@ -159,7 +159,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         reduceVector(cur_pts, status);
         reduceVector(ids, status );
         reduceVector(track_cnt, status);
-        ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
+        // ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
         //printf("track cnt %d\n", (int)ids.size());
     }
 
@@ -169,12 +169,12 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
     if (1)
     {
         //rejectWithF();
-        ROS_DEBUG("set mask begins");
+        // ROS_DEBUG("set mask begins");
         TicToc t_m;
         setMask();
-        ROS_DEBUG("set mask costs %fms", t_m.toc());
+        // ROS_DEBUG("set mask costs %fms", t_m.toc());
 
-        ROS_DEBUG("detect feature begins");
+        // ROS_DEBUG("detect feature begins");
         TicToc t_t;
         int n_max_cnt = MAX_CNT - static_cast<int>(cur_pts.size());
         if (n_max_cnt > 0)
@@ -187,7 +187,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         }
         else
             n_pts.clear();
-        ROS_DEBUG("detect feature costs: %f ms", t_t.toc());
+        // ROS_DEBUG("detect feature costs: %f ms", t_t.toc());
 
         for (auto &p : n_pts)
         {
@@ -376,8 +376,8 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         reduceVector(cur_pts, status);
         reduceVector(ids, status);
         reduceVector(track_cnt, status);
-        ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
-        //printf("track cnt %d\n", (int)ids.size());
+        // ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
+        printf("feature_tracker.cpp: track cnt %d\n", (int)ids.size());
     }
 
     for (auto &n : track_cnt)
@@ -386,12 +386,12 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
     if (1)
     {
         //rejectWithF();
-        ROS_DEBUG("set mask begins");
+        // ROS_DEBUG("set mask begins");
         TicToc t_m;
         setMask();
-        ROS_DEBUG("set mask costs %fms", t_m.toc());
+        // ROS_DEBUG("set mask costs %fms", t_m.toc());
 
-        ROS_DEBUG("detect feature begins");
+        // ROS_DEBUG("detect feature begins");
         TicToc t_t;
         int n_max_cnt = MAX_CNT - static_cast<int>(cur_pts.size());
         if (n_max_cnt > 0)
@@ -404,7 +404,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         }
         else
             n_pts.clear();
-        ROS_DEBUG("detect feature costs: %f ms", t_t.toc());
+        // ROS_DEBUG("detect feature costs: %f ms", t_t.toc());
 
         for (auto &p : n_pts)
         {
@@ -412,7 +412,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
             ids.push_back(n_id++);
             track_cnt.push_back(1);
         }
-        //printf("feature cnt after add %d\n", (int)ids.size());
+        printf("feature_tracker.cpp: feature cnt after add %d\n", (int)ids.size());
     }
 
     cur_un_pts = undistortedPts(cur_pts, m_camera[0]);
@@ -434,7 +434,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
 
             for(int i=0; i<cur_pts.size(); i++){
 
-                float d = dpt.at<unsigned short>(cur_pts[i].y, cur_pts[i].x)*0.001; 
+                float d = dpt.at<unsigned short>(std::round(cur_pts[i].y), std::round(cur_pts[i].x))*0.001; 
                 if(d >= 0.3 && d <= 7){
                     cv::Point2f pt_right = cur_pts[i];
                     pt_right.x = cur_pts[i].x - mbf/d; // mbf = b*fx, b: rig lennth 
@@ -443,11 +443,35 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                         ids_right.push_back(ids[i]);
                         cur_right_pts.push_back(pt_right);
                     }
-                }   
+                if(ids[i] == 152 || ids[i] == 196){
+                    Eigen::Vector3d b;
+                    Eigen::Vector2d a(cur_pts[i].x, cur_pts[i].y);
+                    m_camera[0]->liftProjective(a, b);
+                    cout<<"feature_tracker.cpp: feature id "<<ids[i]<<" nor_ui: "<<b[0]/b[2]<<" nor_vi: "<<b[1]/b[2]<<" ui: "<<cur_pts[i].x
+                        <<" vi: "<<cur_pts[i].y<<" depth: "<< d<<endl;
+
+                    cout<<"pt_right = "<<pt_right.x<<" "<<pt_right.y<<endl; 
+                    a << pt_right.x, pt_right.y; 
+                    m_camera[1]->liftProjective(a, b); 
+                    cout <<"pt_right nor_ui: "<<b[0]/b[2]<<" nor_vi: "<<b[1]/b[2]<<endl; 
+                        if(inBorder(cur_pts[i])){
+                            cout<<"feature "<<ids[i]<<" is in board!"<<endl; 
+                        }else
+                        {
+                            cout<<"feature "<<ids[i]<<" is out of board!"<<endl;
+                        }
+                    }
+
+                } 
+
+            
+
             }
 
             cur_un_right_pts = undistortedPts(cur_right_pts, m_camera[1]);
             right_pts_velocity = ptsVelocity(ids_right, cur_un_right_pts, cur_un_right_pts_map, prev_un_right_pts_map);
+            
+
         }
         prev_un_right_pts_map = cur_un_right_pts_map;
     }

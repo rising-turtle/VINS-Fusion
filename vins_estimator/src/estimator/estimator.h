@@ -55,6 +55,7 @@ class Estimator
     void changeSensorType(int use_imu, int use_stereo);
 
     // internal
+    void showStatus();
     void clearState();
     bool initialStructure();
     bool visualInitialAlign();
