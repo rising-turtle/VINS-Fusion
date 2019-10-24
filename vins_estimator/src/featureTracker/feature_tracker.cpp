@@ -443,24 +443,24 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                         ids_right.push_back(ids[i]);
                         cur_right_pts.push_back(pt_right);
                     }
-                if(ids[i] == 152 || ids[i] == 196){
-                    Eigen::Vector3d b;
-                    Eigen::Vector2d a(cur_pts[i].x, cur_pts[i].y);
-                    m_camera[0]->liftProjective(a, b);
-                    cout<<"feature_tracker.cpp: feature id "<<ids[i]<<" nor_ui: "<<b[0]/b[2]<<" nor_vi: "<<b[1]/b[2]<<" ui: "<<cur_pts[i].x
-                        <<" vi: "<<cur_pts[i].y<<" depth: "<< d<<endl;
+                // if(ids[i] == 152 || ids[i] == 196){
+                //     Eigen::Vector3d b;
+                //     Eigen::Vector2d a(cur_pts[i].x, cur_pts[i].y);
+                //     m_camera[0]->liftProjective(a, b);
+                //     cout<<"feature_tracker.cpp: feature id "<<ids[i]<<" nor_ui: "<<b[0]/b[2]<<" nor_vi: "<<b[1]/b[2]<<" ui: "<<cur_pts[i].x
+                //         <<" vi: "<<cur_pts[i].y<<" depth: "<< d<<endl;
 
-                    cout<<"pt_right = "<<pt_right.x<<" "<<pt_right.y<<endl; 
-                    a << pt_right.x, pt_right.y; 
-                    m_camera[1]->liftProjective(a, b); 
-                    cout <<"pt_right nor_ui: "<<b[0]/b[2]<<" nor_vi: "<<b[1]/b[2]<<endl; 
-                        if(inBorder(cur_pts[i])){
-                            cout<<"feature "<<ids[i]<<" is in board!"<<endl; 
-                        }else
-                        {
-                            cout<<"feature "<<ids[i]<<" is out of board!"<<endl;
-                        }
-                    }
+                //     cout<<"pt_right = "<<pt_right.x<<" "<<pt_right.y<<endl; 
+                //     a << pt_right.x, pt_right.y; 
+                //     m_camera[1]->liftProjective(a, b); 
+                //     cout <<"pt_right nor_ui: "<<b[0]/b[2]<<" nor_vi: "<<b[1]/b[2]<<endl; 
+                //         if(inBorder(cur_pts[i])){
+                //             cout<<"feature "<<ids[i]<<" is in board!"<<endl; 
+                //         }else
+                //         {
+                //             cout<<"feature "<<ids[i]<<" is out of board!"<<endl;
+                //         }
+                //     }
 
                 } 
 

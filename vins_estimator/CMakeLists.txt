@@ -61,18 +61,18 @@ target_link_libraries(vins_lib mask_people ${catkin_LIBRARIES} ${OpenCV_LIBS} ${
 add_executable(vins_node_dpt src/rosNodeTestDpt.cpp)
 target_link_libraries(vins_node_dpt vins_lib)
 
-add_executable(test_struct_core src/estimator/test_struct_core.cpp)
-target_link_libraries(test_struct_core vins_lib)
+# add_executable(test_struct_core src/estimator/test_struct_core.cpp)
+# target_link_libraries(test_struct_core vins_lib)
 
-add_executable(test_cam src/test_cam.cpp)
-target_link_libraries(test_cam vins_lib)
+# add_executable(test_cam src/test_cam.cpp)
+# target_link_libraries(test_cam vins_lib)
 
 add_executable(vins_node src/rosNodeTest.cpp)
 target_link_libraries(vins_node vins_lib) 
 
-add_executable(kitti_odom_test src/KITTIOdomTest.cpp)
-target_link_libraries(kitti_odom_test vins_lib) 
+# add_executable(kitti_odom_test src/KITTIOdomTest.cpp)
+# target_link_libraries(kitti_odom_test vins_lib) 
 
-add_executable(kitti_gps_test src/KITTIGPSTest.cpp)
-target_link_libraries(kitti_gps_test vins_lib) 
+# add_executable(kitti_gps_test src/KITTIGPSTest.cpp)
+# target_link_libraries(kitti_gps_test vins_lib) 
 

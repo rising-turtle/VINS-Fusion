@@ -75,7 +75,7 @@ void EstimatorDpt::inputImageDpt(double t, const cv::Mat &_img, const cv::Mat &d
     
     if(MULTIPLE_THREAD)  
     {     
-        // if(inputImageCnt % 2 == 0)
+        if(solver_flag == NON_LINEAR ||(inputImageCnt % 2 == 0))
         {
             mBuf.lock();
             featureBuf.push(make_pair(t, featureFrame));

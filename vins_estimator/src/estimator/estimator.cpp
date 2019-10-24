@@ -196,7 +196,7 @@ void Estimator::inputImage(double t, const cv::Mat &_img, const cv::Mat &_img1)
     
     if(MULTIPLE_THREAD)  
     {     
-        if(inputImageCnt % 2 == 0) // TODO: recover this
+        if(inputImageCnt % 2 == 0)
         {
             mBuf.lock();
             featureBuf.push(make_pair(t, featureFrame));
@@ -402,6 +402,8 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
     }
     if (frame_count != 0)
     {
+        // cout<<"estimator.cpp: frame_count: "<<frame_count<<" dt: "<<dt<<" linear_acceleration: "<<linear_acceleration.transpose()
+        //    <<" angular_velocity: "<<angular_velocity.transpose()<<endl;
         pre_integrations[frame_count]->push_back(dt, linear_acceleration, angular_velocity);
         //if(solver_flag != NON_LINEAR)
             tmp_pre_integration->push_back(dt, linear_acceleration, angular_velocity);
@@ -418,6 +420,7 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
         Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);
         Ps[j] += dt * Vs[j] + 0.5 * dt * dt * un_acc;
         Vs[j] += dt * un_acc;
+        cout<< "dt: "<<dt<<" un_acc: "<<un_acc.transpose()<<" Vs["<<j<<"]: "<<Vs[j].transpose()<<" g: "<<g.transpose()<<endl;
     }
     acc_0 = linear_acceleration;
     gyr_0 = angular_velocity; 
@@ -853,6 +856,7 @@ void Estimator::vector2double()
             para_SpeedBias[i][6] = Bgs[i].x();
             para_SpeedBias[i][7] = Bgs[i].y();
             para_SpeedBias[i][8] = Bgs[i].z();
+            cout <<"in prior: Vs["<<i<<"]: "<<Vs[i].transpose()<<endl;
         }
     }
 
@@ -1129,7 +1133,7 @@ void Estimator::optimization()
     options.trust_region_strategy_type = ceres::DOGLEG;
     options.max_num_iterations = NUM_ITERATIONS;
     //options.use_explicit_schur_complement = true;
-    //options.minimizer_progress_to_stdout = true;
+    // options.minimizer_progress_to_stdout = true;
     //options.use_nonmonotonic_steps = true;
     if (marginalization_flag == MARGIN_OLD)
         options.max_solver_time_in_seconds = SOLVER_TIME * 4.0 / 5.0;
@@ -1138,7 +1142,7 @@ void Estimator::optimization()
     TicToc t_solver;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
-    //cout << summary.BriefReport() << endl;
+    // cout << summary.BriefReport() << endl;
     ROS_DEBUG("Iterations : %d", static_cast<int>(summary.iterations.size()));
     //printf("solver costs: %f \n", t_solver.toc());
 
