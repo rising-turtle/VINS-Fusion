@@ -37,6 +37,10 @@
 #include "../featureTracker/feature_tracker.h"
 #include "../featureTracker/feature_tracker_people_mask.h"
 
+// for debug 
+#include "../factor/depth_factor.h"
+#include "../factor/projection_factor.h"
+
 class Estimator
 {
   public:

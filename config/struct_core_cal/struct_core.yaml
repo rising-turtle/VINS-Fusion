@@ -71,11 +71,11 @@ gyr_w: 0.0001       # gyroscope bias random work noise standard deviation.     #
 g_norm: 9.8         # gravity magnitude
 
 #unsynchronization parameters
-estimate_td: 1                      # online estimate time offset between camera and imu
+estimate_td: 0 # 1                      # online estimate time offset between camera and imu
 td: 0.0                             # initial value of time offset. unit: s. readed image clock + td = real image clock (IMU clock)
 
 #rolling shutter parameters
-rolling_shutter: 1                      # 0: global shutter camera, 1: rolling shutter camera
+rolling_shutter: 0 # 1                      # 0: global shutter camera, 1: rolling shutter camera
 rolling_shutter_tr: 0.033               # unit: s. rolling shutter read out time per frame (from data sheet). 
 
 #loop closure parameters
