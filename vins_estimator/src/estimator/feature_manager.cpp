@@ -293,7 +293,7 @@ void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs
                     cv::Point2f point2d(it_per_id.feature_per_frame[index].point.x(), it_per_id.feature_per_frame[index].point.y());
                     pts3D.push_back(point3d);
                     pts2D.push_back(point2d); 
-                    // if(frameCnt == 6){
+                    // if(frameCnt == 1){
                     //     cout <<" feature id: "<<it_per_id.feature_id<<" pts3D: "<<ptsInWorld.transpose()<<" pts2D: "<<point2d.x<<" "<<point2d.y<<endl; 
                     // }
                 }
@@ -305,7 +305,7 @@ void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs
         RCam = Rs[frameCnt - 1] * ric[0];
         PCam = Rs[frameCnt - 1] * tic[0] + Ps[frameCnt - 1];
 
-        // if(frameCnt == 6){
+        // if(frameCnt == 1){
         //      cout<<"Rcam: "<<endl<<RCam<<" PCam: "<<PCam.transpose()<<endl;
         // }
 

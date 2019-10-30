@@ -105,7 +105,7 @@ void Estimator::setParameter()
     ProjectionTwoFrameOneCamFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     ProjectionTwoFrameTwoCamFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     ProjectionOneFrameTwoCamFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
-    ProjectionDepthFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
+    ProjectionFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     td = TD;
     g = G;
     cout << "set g " << g.transpose() << endl;
@@ -1017,7 +1017,7 @@ bool Estimator::failureDetection()
     }
     return false;
 }
-/*
+
 void Estimator::optimization()
 {
     TicToc t_whole, t_prepare;
@@ -1343,8 +1343,9 @@ void Estimator::optimization()
     }
     //printf("whole marginalization costs: %f \n", t_whole_marginalization.toc());
     //printf("whole time for ceres: %f \n", t_whole.toc());
-}*/
+}
 
+/*
 // use depth for debug
 void Estimator::optimization()
 {
@@ -1410,12 +1411,13 @@ void Estimator::optimization()
 
     int f_m_cnt = 0;
     int feature_index = -1;
+    int cnt_used_features = 0; 
     for (auto &it_per_id : f_manager.feature)
     {
         it_per_id.used_num = it_per_id.feature_per_frame.size();
         if (it_per_id.used_num < 4)
             continue;
- 
+        ++cnt_used_features; 
         ++feature_index;
 
         int imu_i = it_per_id.start_frame, imu_j = imu_i - 1;
@@ -1444,20 +1446,20 @@ void Estimator::optimization()
                     problem.AddResidualBlock(f_td, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index], para_Td[0]);
                 }
             }else{
-                /*if(STEREO && it_per_frame.is_stereo){
+                if(STEREO && it_per_frame.is_stereo){
                     double ul = it_per_frame.uv.x(); 
                     double ur = it_per_frame.uvRight.x(); 
                     double mbf = 0.1 * 457.876; 
                     double dpt_j = mbf/(ul-ur); 
                     SingleInvDepthFactor * f = new SingleInvDepthFactor(1./dpt_j); 
                     problem.AddResidualBlock(f, loss_function, para_Feature[feature_index]);
-                }*/
+                }
             }
             f_m_cnt++;
         }
     }
 
-    ROS_DEBUG("visual measurement count: %d", f_m_cnt);
+    ROS_DEBUG("estimator.cpp: before optimization, %d features have been used with %d constraints", cnt_used_features, f_m_cnt);
     //printf("prepare for ceres: %f \n", t_prepare.toc());
 
     ceres::Solver::Options options;
@@ -1677,7 +1679,7 @@ void Estimator::optimization()
     }
     //printf("whole marginalization costs: %f \n", t_whole_marginalization.toc());
     //printf("whole time for ceres: %f \n", t_whole.toc());
-}
+}*/
 
 void Estimator::slideWindow()
 {
