@@ -421,7 +421,7 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
         Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);
         Ps[j] += dt * Vs[j] + 0.5 * dt * dt * un_acc;
         Vs[j] += dt * un_acc;
-        // cout<< "dt: "<<dt<<" un_acc: "<<un_acc.transpose()<<" Vs["<<j<<"]: "<<Vs[j].transpose()<<" g: "<<g.transpose()<<endl;
+        // cout<< "dt: "<<dt<<" un_acc: "<<un_acc.transpose()<<" Ba["<<j<<"]: "<<Bas[j].transpose()<<" g: "<<g.transpose()<<endl;
     }
     acc_0 = linear_acceleration;
     gyr_0 = angular_velocity; 
