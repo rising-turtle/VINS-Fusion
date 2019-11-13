@@ -1114,7 +1114,25 @@ void Estimator::optimization()
                 Vector3d pts_j = it_per_frame.point;
                 ProjectionTwoFrameOneCamFactor *f_td = new ProjectionTwoFrameOneCamFactor(pts_i, pts_j, it_per_id.feature_per_frame[0].velocity, it_per_frame.velocity,
                                                                  it_per_id.feature_per_frame[0].cur_td, it_per_frame.cur_td);
-                problem.AddResidualBlock(f_td, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index], para_Td[0]);
+                ceres::ResidualBlockId fid = problem.AddResidualBlock(f_td, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index], para_Td[0]);
+                f_m_cnt++;
+                // for debug
+                if(0 && it_per_id.feature_id == 2){
+                    ROS_WARN("estimator.cpp: add projection factor to feature %d between imu_i %d and imu_j %d", it_per_id.feature_id, imu_i, imu_j);
+                    //        cout<<"Pose imu_i: "<<endl;
+                    // for(int i=0; i<SIZE_POSE; i++)
+                    //     cout<<" "<<para_Pose[imu_i][i];
+                    // cout<<endl<<"Pose imu_j: "<<endl;
+                    // for(int i=0; i<SIZE_POSE; i++)
+                    //     cout<<" "<<para_Pose[imu_j][i];
+
+                    cout<<endl<<"feature index: "<<feature_index<<" lambda: "<<para_Feature[feature_index][0]<<endl;
+                    vector<double*>* para = new vector<double*>;  
+                    problem.GetParameterBlocksForResidualBlock(fid, para); 
+                    vector<double> res(2); 
+                    f_td->Evaluate(&para[0][0], &res[0], 0); 
+                    cout<<"dvio.cpp: residual: "<<res[0]<<" "<<res[1]<<endl;
+                }
             }
 
             if(STEREO && it_per_frame.is_stereo)
@@ -1124,20 +1142,62 @@ void Estimator::optimization()
                 {
                     ProjectionTwoFrameTwoCamFactor *f = new ProjectionTwoFrameTwoCamFactor(pts_i, pts_j_right, it_per_id.feature_per_frame[0].velocity, it_per_frame.velocityRight,
                                                                  it_per_id.feature_per_frame[0].cur_td, it_per_frame.cur_td);
-                    problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]);
+                    ceres::ResidualBlockId fid = problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]);
+                    f_m_cnt++;
+                    // for debug
+                    if(it_per_id.feature_id == 2){
+                        ROS_WARN("estimator.cpp: add stereo factor to feature %d between imu_i %d and imu_j %d", it_per_id.feature_id, imu_i, imu_j);
+                        cout<<"right_pj: "<<pts_j_right.transpose()<<endl; 
+                      
+                        vector<double*>* para = new vector<double*>;  
+                        problem.GetParameterBlocksForResidualBlock(fid, para); 
+                        vector<double> res(2); 
+                        f->Evaluate(&para[0][0], &res[0], 0); 
+                        cout<<"estimator.cpp: residual: "<<res[0]<<" "<<res[1]<<endl;
+
+                        if(imu_i == 0 && imu_j == 4){
+                          cout<<"Pose imu_i: "<<endl;
+                        
+                        for(int i=0; i<SIZE_POSE; i++)
+                            cout<<" "<<para_Pose[imu_i][i];
+                        cout<<endl<<"Pose imu_j: "<<endl;
+                        for(int i=0; i<SIZE_POSE; i++)
+                            cout<<" "<<para_Pose[imu_j][i];
+
+                         f->debug(&para[0][0], &res[0], 0); 
+                        }
+                    }
                 }
                 else
                 {
                     ProjectionOneFrameTwoCamFactor *f = new ProjectionOneFrameTwoCamFactor(pts_i, pts_j_right, it_per_id.feature_per_frame[0].velocity, it_per_frame.velocityRight,
                                                                  it_per_id.feature_per_frame[0].cur_td, it_per_frame.cur_td);
-                    problem.AddResidualBlock(f, loss_function, para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]);
+                    ceres::ResidualBlockId fid = problem.AddResidualBlock(f, loss_function, para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]);
+                    f_m_cnt++;
+                     // for debug
+                    if(it_per_id.feature_id == 2){
+                        ROS_WARN("estimator.cpp: add single factor to feature %d lambda: %lf", it_per_id.feature_id, para_Feature[feature_index][0]);
+                        cout<<"pts_i: "<<pts_i.transpose()<<" right_pj: "<<pts_j_right.transpose()<<endl; 
+                        
+        
+                        cout<<endl<<"it_per_id.feature_per_frame[0].velocity: "<<it_per_id.feature_per_frame[0].velocity<< " it_per_frame.velocityRight: "<<it_per_frame.velocityRight<<endl;
+                        cout<<"it_per_id.feature_per_frame[0].cur_td: "<<it_per_id.feature_per_frame[0].cur_td<<" it_per_frame.cur_td: "<<it_per_frame.cur_td<<endl;
+
+                         vector<double*>* para = new vector<double*>;  
+                        problem.GetParameterBlocksForResidualBlock(fid, para); 
+                        vector<double> res(2); 
+                        f->Evaluate(&para[0][0], &res[0], 0); 
+                        cout<<"dvio.cpp: residual: "<<res[0]<<" "<<res[1]<<endl;
+                        f->debug(&para[0][0], &res[0], 0); 
+                        cout<<"dvio.cpp: debug residual: "<<res[0]<<" "<<res[1]<<endl;
+                    }
                 }
                
             }
-            f_m_cnt++;
+           
             ++cnt_constraint_i;
         }
-        ROS_WARN("dvio.cpp: feature %d has constraints %d", it_per_id.feature_id, cnt_constraint_i); 
+        // ROS_WARN("dvio.cpp: feature %d has constraints %d", it_per_id.feature_id, cnt_constraint_i); 
     }
 
     ROS_DEBUG("estimator.cpp: before optimization, %d features have been used with %d constraints", cnt_used_features, f_m_cnt);
@@ -1163,6 +1223,13 @@ void Estimator::optimization()
     cout << summary.BriefReport() << endl;
     ROS_DEBUG("Iterations : %d", static_cast<int>(summary.iterations.size()));
     //printf("solver costs: %f \n", t_solver.toc());
+
+    // static bool once = true;
+    // if(once){
+    //     for(int i=0; i<feature_index; i++)
+    //         cout<<"i: "<<i<<" lambda: "<< para_Feature[i][0]<<endl;
+    //     once = false; 
+    // }
 
     double2vector();
     //printf("frame_count: %d \n", frame_count);
