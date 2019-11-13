@@ -1080,15 +1080,27 @@ void Estimator::optimization()
         }
     }
 
+    int cnt_used_features = 0; 
+    int cnt_not_used_feat = 0;
     int f_m_cnt = 0;
     int feature_index = -1;
     for (auto &it_per_id : f_manager.feature)
     {
         it_per_id.used_num = it_per_id.feature_per_frame.size();
-        if (it_per_id.used_num < 4)
+        if (it_per_id.used_num < 4){
+            ++cnt_not_used_feat; 
             continue;
- 
+        }
+            
+        // for debug
+        if(it_per_id.feature_id == 0){
+            ROS_ERROR("estimator.cpp: feature 0 has %d obs", it_per_id.feature_per_frame.size());
+        }
+
         ++feature_index;
+        ++cnt_used_features;
+
+        int cnt_constraint_i = 0; 
 
         int imu_i = it_per_id.start_frame, imu_j = imu_i - 1;
         
@@ -1123,10 +1135,13 @@ void Estimator::optimization()
                
             }
             f_m_cnt++;
+            ++cnt_constraint_i;
         }
+        ROS_WARN("dvio.cpp: feature %d has constraints %d", it_per_id.feature_id, cnt_constraint_i); 
     }
 
-    ROS_DEBUG("visual measurement count: %d", f_m_cnt);
+    ROS_DEBUG("estimator.cpp: before optimization, %d features have been used with %d constraints", cnt_used_features, f_m_cnt);
+    ROS_WARN("estimator.cpp: %d features not used", cnt_not_used_feat); 
     //printf("prepare for ceres: %f \n", t_prepare.toc());
 
     ceres::Solver::Options options;
@@ -1145,7 +1160,7 @@ void Estimator::optimization()
     TicToc t_solver;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
-    // cout << summary.BriefReport() << endl;
+    cout << summary.BriefReport() << endl;
     ROS_DEBUG("Iterations : %d", static_cast<int>(summary.iterations.size()));
     //printf("solver costs: %f \n", t_solver.toc());
 

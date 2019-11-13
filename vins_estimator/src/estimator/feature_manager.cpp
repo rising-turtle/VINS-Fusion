@@ -514,6 +514,7 @@ void FeatureManager::removeOutlier(set<int> &outlierIndex)
 
 void FeatureManager::removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3d marg_P, Eigen::Matrix3d new_R, Eigen::Vector3d new_P)
 {
+    int cnt_invalid_feat = 0;
     for (auto it = feature.begin(), it_next = feature.begin();
          it != feature.end(); it = it_next)
     {
@@ -538,8 +539,10 @@ void FeatureManager::removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3
                 double dep_j = pts_j(2);
                 if (dep_j > 0)
                     it->estimated_depth = dep_j;
-                else
+                else{
+                    ++cnt_invalid_feat; 
                     it->estimated_depth = INIT_DEPTH;
+                }
             }
         }
         // remove tracking-lost feature after marginalize
@@ -550,6 +553,7 @@ void FeatureManager::removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3
         }
         */
     }
+    ROS_WARN("feature_manager.cpp: number of feature depth invalid %d", cnt_invalid_feat); 
 }
 
 void FeatureManager::removeBack()
