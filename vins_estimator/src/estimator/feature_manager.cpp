@@ -52,7 +52,7 @@ int FeatureManager::getFeatureCount()
 bool FeatureManager::addFeatureCheckParallax(int frame_count, const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image, double td)
 {
     ROS_DEBUG("input feature: %d", (int)image.size());
-    ROS_DEBUG("num of feature: %d", getFeatureCount());
+    ROS_DEBUG("before addFeatureCheckParallax num of feature: %d", getFeatureCount());
     double parallax_sum = 0;
     int parallax_num = 0;
     last_track_num = 0;
@@ -94,6 +94,8 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count, const map<int, vec
         //        <<id_pts.second[0].second(1)<<" ui: "<<id_pts.second[0].second(3)<< " vi: "<<
         //        id_pts.second[0].second(4)<<" zi: "<<id_pts.second[0].second(2)<<endl;
     }
+
+    ROS_INFO("after addFeatureCheckParallax num of feature: %d", getFeatureCount());
 
     //if (frame_count < 2 || last_track_num < 20)
     //if (frame_count < 2 || last_track_num < 20 || new_feature_num > 0.5 * last_track_num)
@@ -157,7 +159,7 @@ void FeatureManager::setDepth(const VectorXd &x)
 
         it_per_id.estimated_depth = 1.0 / x(++feature_index);
         //ROS_INFO("feature id %d , start_frame %d, depth %f ", it_per_id->feature_id, it_per_id-> start_frame, it_per_id->estimated_depth);
-        if (it_per_id.estimated_depth < 0)
+        if (it_per_id.estimated_depth < 0 || it_per_id.estimated_depth <= 0.1)
         {
             it_per_id.solve_flag = 2;
         }
@@ -295,6 +297,7 @@ void FeatureManager::initFramePoseByPnP(int frameCnt, Vector3d Ps[], Matrix3d Rs
                     pts2D.push_back(point2d); 
                     // if(frameCnt == 1){
                     //     cout <<" feature id: "<<it_per_id.feature_id<<" pts3D: "<<ptsInWorld.transpose()<<" pts2D: "<<point2d.x<<" "<<point2d.y<<endl; 
+                    //     cout <<"feature depth: "<<it_per_id.estimated_depth<<endl; 
                     // }
                 }
             }
@@ -361,7 +364,9 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
             triangulatePoint(leftPose, rightPose, point0, point1, point3d);
             Eigen::Vector3d localPoint;
             localPoint = leftPose.leftCols<3>() * point3d + leftPose.rightCols<1>();
-            double depth = localPoint.z();
+            float depth = localPoint.z();
+
+            depth = 0.1/( it_per_id.feature_per_frame[0].point(0) - it_per_id.feature_per_frame[0].pointRight(0)); 
 
             // if(frameCnt ==6 && it_per_id.feature_id == 540){
             //     cout <<" feature_manager.cpp: debug feature_id = 1"<<endl; 
@@ -383,6 +388,11 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
                     it_per_id.estimated_depth = INIT_DEPTH;
             }
 
+            if(it_per_id.feature_id == 4){
+                cout <<"feature_manager.cpp:  it_per_id.feature_per_frame[0].point(0) : "<< it_per_id.feature_per_frame[0].point(0) <<
+                    " it_per_id.feature_per_frame[0].pointRight(0): "<<it_per_id.feature_per_frame[0].pointRight(0)<<" depth: "<<depth<<endl; 
+                cout <<" feature_manager.cpp: point left "<<point0.transpose()<<" right: "<<point1.transpose()<<" depth: "<<it_per_id.estimated_depth <<endl;
+            }
             /*
             Vector3d ptsGt = pts_gt[it_per_id.feature_id];
             printf("stereo %d pts: %f %f %f gt: %f %f %f \n",it_per_id.feature_id, point3d.x(), point3d.y(), point3d.z(),
@@ -507,7 +517,7 @@ void FeatureManager::removeOutlier(set<int> &outlierIndex)
         if(itSet != outlierIndex.end())
         {
             feature.erase(it);
-            //printf("remove outlier %d \n", index);
+            printf("remove outlier %d \n", index);
         }
     }
 }
@@ -515,6 +525,7 @@ void FeatureManager::removeOutlier(set<int> &outlierIndex)
 void FeatureManager::removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3d marg_P, Eigen::Matrix3d new_R, Eigen::Vector3d new_P)
 {
     int cnt_invalid_feat = 0;
+    int cnt_deleted_feat = 0; 
     for (auto it = feature.begin(), it_next = feature.begin();
          it != feature.end(); it = it_next)
     {
@@ -529,6 +540,7 @@ void FeatureManager::removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3
             if (it->feature_per_frame.size() < 2)
             {
                 feature.erase(it);
+                ++cnt_deleted_feat;
                 continue;
             }
             else
@@ -553,7 +565,7 @@ void FeatureManager::removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3
         }
         */
     }
-    ROS_WARN("feature_manager.cpp: number of feature depth invalid %d", cnt_invalid_feat); 
+    ROS_WARN("feature_manager.cpp: number of feature depth invalid %d, number of feature to be deleted: %d", cnt_invalid_feat, cnt_deleted_feat); 
 }
 
 void FeatureManager::removeBack()

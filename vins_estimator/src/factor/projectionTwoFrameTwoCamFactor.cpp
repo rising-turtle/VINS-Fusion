@@ -77,7 +77,7 @@ bool ProjectionTwoFrameTwoCamFactor::debug(double const *const *parameters, doub
     double dep_j = pts_camera_j.z();
     residual = (pts_camera_j / dep_j).head<2>() - pts_j_td.head<2>();
 
-    std::cout<<std::fixed<< std::setprecision(9)<<"pts_camera_j: "<<pts_camera_j.transpose()<<" pts_j_td: "<<pts_j_td.transpose()<<std::endl; 
+    std::cout<<"pts_camera_j: "<<pts_camera_j.transpose()<<" pts_j_td: "<<pts_j_td.transpose()<<std::endl; 
     std::cout<<"residual: "<<residual.transpose()<<std::endl;
 #endif
 

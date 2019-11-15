@@ -202,6 +202,8 @@ void MarginalizationInfo::marginalize()
 
     n = pos - m;
     //ROS_INFO("marginalization, pos: %d, m: %d, n: %d, size: %d", pos, m, n, (int)parameter_block_idx.size());
+    ROS_DEBUG("marginalization, pos: %d, m: %d, n: %d, size: %d", pos, m, n, (int)parameter_block_idx.size());
+    
     if(m == 0)
     {
         valid = false;

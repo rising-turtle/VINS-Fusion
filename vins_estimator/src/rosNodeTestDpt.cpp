@@ -270,7 +270,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    std::cout<<std::fixed<< std::setprecision(9); 
+    std::cout<<std::fixed<< std::setprecision(6); 
     string config_file = argv[1];
     printf("config_file: %s\n", argv[1]);
 

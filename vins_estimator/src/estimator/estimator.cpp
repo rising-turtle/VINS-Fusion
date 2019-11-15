@@ -105,6 +105,11 @@ void Estimator::setParameter()
     ProjectionTwoFrameOneCamFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     ProjectionTwoFrameTwoCamFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     ProjectionOneFrameTwoCamFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
+
+    // ProjectionTwoFrameOneCamFactor::sqrt_info =  Matrix2d::Identity();
+    // ProjectionTwoFrameTwoCamFactor::sqrt_info =  Matrix2d::Identity();
+    // ProjectionOneFrameTwoCamFactor::sqrt_info =  Matrix2d::Identity();
+
     ProjectionFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     td = TD;
     g = G;
@@ -444,7 +449,7 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
 
     ROS_INFO("handle frame at timestamp %lf is a %s", header, marginalization_flag ? "Non-keyframe" : "Keyframe");
     ROS_DEBUG("Solving %d", frame_count);
-    ROS_DEBUG("number of feature: %d", f_manager.getFeatureCount());
+    ROS_INFO("at timestamp: %lf number of feature: %d", header, f_manager.getFeatureCount());
     Headers[frame_count] = header;
 
     ImageFrame imageframe(image, header);
@@ -556,17 +561,29 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
         if(!USE_IMU)
             f_manager.initFramePoseByPnP(frame_count, Ps, Rs, tic, ric);
         f_manager.triangulate(frame_count, Ps, Rs, tic, ric);
-        optimization();
+
+
+        if(fabs(header- 312.409987) <= 1e-5)
+            optimization(true);
+        else
+            optimization();
+
         set<int> removeIndex;
         outliersRejection(removeIndex);
+
+        cout<<"before removeoutlier, number of features: "<<f_manager.getFeatureCount()<<endl; 
+
         f_manager.removeOutlier(removeIndex);
+
+        cout<<"after removeoutlier, number of features: "<<f_manager.getFeatureCount()<<endl; 
+
         if (! MULTIPLE_THREAD)
         {
-            featureTracker.removeOutliers(removeIndex);
-            predictPtsInNextFrame();
+            // featureTracker.removeOutliers(removeIndex);
+            // predictPtsInNextFrame();
         }
             
-        ROS_DEBUG("solver costs: %fms", t_solve.toc());
+        // ROS_DEBUG("solver costs: %fms", t_solve.toc());
 
         if (failureDetection())
         {
@@ -578,8 +595,15 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
             return;
         }
 
+        cout<<"before slidewindow, number of features: "<<f_manager.getFeatureCount()<<endl; 
+
         slideWindow();
+
+        cout<<"after slidewindow, number of features: "<<f_manager.getFeatureCount()<<endl;
+
         f_manager.removeFailures();
+
+        cout<<"after removeFailures, number of features: "<<f_manager.getFeatureCount()<<endl; 
         // prepare output of VINS
         key_poses.clear();
         for (int i = 0; i <= WINDOW_SIZE; i++)
@@ -1018,7 +1042,7 @@ bool Estimator::failureDetection()
     return false;
 }
 
-void Estimator::optimization()
+void Estimator::optimization(bool debug)
 {
     TicToc t_whole, t_prepare;
     vector2double();
@@ -1063,8 +1087,8 @@ void Estimator::optimization()
     {
         // construct new marginlization_factor
         MarginalizationFactor *marginalization_factor = new MarginalizationFactor(last_marginalization_info);
-        problem.AddResidualBlock(marginalization_factor, NULL,
-                                 last_marginalization_parameter_blocks);
+        // problem.AddResidualBlock(marginalization_factor, NULL,
+        //                         last_marginalization_parameter_blocks);
         //for(int i=0; i<last_marginalization_parameter_blocks.size(); i++)
             // printf("estimator.cpp: last_marginalization_info block %d pointer: %p \n", last_marginalization_parameter_blocks[i]);
     }
@@ -1076,7 +1100,18 @@ void Estimator::optimization()
             if (pre_integrations[j]->sum_dt > 10.0)
                 continue;
             IMUFactor* imu_factor = new IMUFactor(pre_integrations[j]);
-            problem.AddResidualBlock(imu_factor, NULL, para_Pose[i], para_SpeedBias[i], para_Pose[j], para_SpeedBias[j]);
+            ceres::ResidualBlockId fid = problem.AddResidualBlock(imu_factor, NULL, para_Pose[i], para_SpeedBias[i], para_Pose[j], para_SpeedBias[j]);
+
+            if(debug){
+                vector<double*>* para = new vector<double*>;  
+                problem.GetParameterBlocksForResidualBlock(fid, para); 
+                vector<double> res(15); 
+                imu_factor->Evaluate(&para[0][0], &res[0], 0); 
+                cout<<"IMU factor between "<<i<<" and "<<j<<"residual: "<<endl;
+                for(int i=0; i<res.size(); i++)
+                    cout<<" "<<res[i];
+                cout<<endl;
+            }
         }
     }
 
@@ -1084,6 +1119,7 @@ void Estimator::optimization()
     int cnt_not_used_feat = 0;
     int f_m_cnt = 0;
     int feature_index = -1;
+    
     for (auto &it_per_id : f_manager.feature)
     {
         it_per_id.used_num = it_per_id.feature_per_frame.size();
@@ -1092,11 +1128,6 @@ void Estimator::optimization()
             continue;
         }
             
-        // for debug
-        if(it_per_id.feature_id == 0){
-            ROS_ERROR("estimator.cpp: feature 0 has %d obs", it_per_id.feature_per_frame.size());
-        }
-
         ++feature_index;
         ++cnt_used_features;
 
@@ -1117,7 +1148,8 @@ void Estimator::optimization()
                 ceres::ResidualBlockId fid = problem.AddResidualBlock(f_td, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index], para_Td[0]);
                 f_m_cnt++;
                 // for debug
-                if(0 && it_per_id.feature_id == 2){
+                // if(0 && it_per_id.feature_id == 2){
+                if(debug){
                     ROS_WARN("estimator.cpp: add projection factor to feature %d between imu_i %d and imu_j %d", it_per_id.feature_id, imu_i, imu_j);
                     //        cout<<"Pose imu_i: "<<endl;
                     // for(int i=0; i<SIZE_POSE; i++)
@@ -1145,7 +1177,8 @@ void Estimator::optimization()
                     ceres::ResidualBlockId fid = problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]);
                     f_m_cnt++;
                     // for debug
-                    if(it_per_id.feature_id == 2){
+                    // if(0 && it_per_id.feature_id == 2){
+                    if(debug){
                         ROS_WARN("estimator.cpp: add stereo factor to feature %d between imu_i %d and imu_j %d", it_per_id.feature_id, imu_i, imu_j);
                         cout<<"right_pj: "<<pts_j_right.transpose()<<endl; 
                       
@@ -1155,17 +1188,17 @@ void Estimator::optimization()
                         f->Evaluate(&para[0][0], &res[0], 0); 
                         cout<<"estimator.cpp: residual: "<<res[0]<<" "<<res[1]<<endl;
 
-                        if(imu_i == 0 && imu_j == 4){
-                          cout<<"Pose imu_i: "<<endl;
+                        // if(imu_i == 0 && imu_j == 4){
+                        //   cout<<"Pose imu_i: "<<endl;
                         
-                        for(int i=0; i<SIZE_POSE; i++)
-                            cout<<" "<<para_Pose[imu_i][i];
-                        cout<<endl<<"Pose imu_j: "<<endl;
-                        for(int i=0; i<SIZE_POSE; i++)
-                            cout<<" "<<para_Pose[imu_j][i];
+                        // for(int i=0; i<SIZE_POSE; i++)
+                        //     cout<<" "<<para_Pose[imu_i][i];
+                        // cout<<endl<<"Pose imu_j: "<<endl;
+                        // for(int i=0; i<SIZE_POSE; i++)
+                        //     cout<<" "<<para_Pose[imu_j][i];
 
-                         f->debug(&para[0][0], &res[0], 0); 
-                        }
+                        //  f->debug(&para[0][0], &res[0], 0); 
+                        // }
                     }
                 }
                 else
@@ -1175,21 +1208,21 @@ void Estimator::optimization()
                     ceres::ResidualBlockId fid = problem.AddResidualBlock(f, loss_function, para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]);
                     f_m_cnt++;
                      // for debug
-                    if(it_per_id.feature_id == 2){
+                    // if(0 && it_per_id.feature_id == 2){
+                    if(debug){
                         ROS_WARN("estimator.cpp: add single factor to feature %d lambda: %lf", it_per_id.feature_id, para_Feature[feature_index][0]);
                         cout<<"pts_i: "<<pts_i.transpose()<<" right_pj: "<<pts_j_right.transpose()<<endl; 
                         
-        
-                        cout<<endl<<"it_per_id.feature_per_frame[0].velocity: "<<it_per_id.feature_per_frame[0].velocity<< " it_per_frame.velocityRight: "<<it_per_frame.velocityRight<<endl;
-                        cout<<"it_per_id.feature_per_frame[0].cur_td: "<<it_per_id.feature_per_frame[0].cur_td<<" it_per_frame.cur_td: "<<it_per_frame.cur_td<<endl;
+                        // cout<<endl<<"it_per_id.feature_per_frame[0].velocity: "<<it_per_id.feature_per_frame[0].velocity<< " it_per_frame.velocityRight: "<<it_per_frame.velocityRight<<endl;
+                        // cout<<"it_per_id.feature_per_frame[0].cur_td: "<<it_per_id.feature_per_frame[0].cur_td<<" it_per_frame.cur_td: "<<it_per_frame.cur_td<<endl;
 
-                         vector<double*>* para = new vector<double*>;  
+                        vector<double*>* para = new vector<double*>;  
                         problem.GetParameterBlocksForResidualBlock(fid, para); 
                         vector<double> res(2); 
                         f->Evaluate(&para[0][0], &res[0], 0); 
                         cout<<"dvio.cpp: residual: "<<res[0]<<" "<<res[1]<<endl;
-                        f->debug(&para[0][0], &res[0], 0); 
-                        cout<<"dvio.cpp: debug residual: "<<res[0]<<" "<<res[1]<<endl;
+                        // f->debug(&para[0][0], &res[0], 0); 
+                        // cout<<"dvio.cpp: debug residual: "<<res[0]<<" "<<res[1]<<endl;
                     }
                 }
                
@@ -1211,7 +1244,7 @@ void Estimator::optimization()
     options.trust_region_strategy_type = ceres::DOGLEG;
     options.max_num_iterations = NUM_ITERATIONS;
     //options.use_explicit_schur_complement = true;
-    // options.minimizer_progress_to_stdout = true;
+    options.minimizer_progress_to_stdout = true;
     //options.use_nonmonotonic_steps = true;
     if (marginalization_flag == MARGIN_OLD)
         options.max_solver_time_in_seconds = SOLVER_TIME * 4.0 / 5.0;
@@ -1976,7 +2009,7 @@ void Estimator::outliersRejection(set<int> &removeIndex)
                 //printf("tmp_error %f\n", FOCAL_LENGTH / 1.5 * tmp_error);
             }
             // need to rewrite projecton factor.........
-            if(STEREO && it_per_frame.is_stereo)
+            if(0 && STEREO && it_per_frame.is_stereo)
             {
                 
                 Vector3d pts_j_right = it_per_frame.pointRight;
