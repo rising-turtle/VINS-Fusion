@@ -377,7 +377,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
         reduceVector(ids, status);
         reduceVector(track_cnt, status);
         // ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
-        printf("feature_tracker.cpp: timestamp %lf track cnt %d\n", _cur_time, (int)ids.size());
+        ROS_ERROR("feature_tracker.cpp: timestamp %lf track cnt %d\n", _cur_time, (int)ids.size());
     }
 
     for (auto &n : track_cnt)
@@ -412,7 +412,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
             ids.push_back(n_id++);
             track_cnt.push_back(1);
         }
-        printf("feature_tracker.cpp: feature cnt after add %d\n", (int)ids.size());
+        // printf("feature_tracker.cpp: feature cnt after add %d\n", (int)ids.size());
     }
 
     cur_un_pts = undistortedPts(cur_pts, m_camera[0]);
@@ -439,9 +439,13 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                     cv::Point2f pt_right = cur_pts[i];
                     pt_right.x = cur_pts[i].x - mbf/d; // mbf = b*fx, b: rig lennth 
 
+                    //cv::Point2f un_pt_right = cur_un_pts[i]; 
+                    //un_pt_right.x = cur_un_pts[i].x - 0.1/d; 
+
                     if(inBorder(pt_right)){
                         ids_right.push_back(ids[i]);
                         cur_right_pts.push_back(pt_right);
+                        // cur_un_right_pts.push_back(un_pt_right);
                     }
                 // if(ids[i] == 152 || ids[i] == 196){
                 //     Eigen::Vector3d b;
@@ -461,6 +465,11 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                 //             cout<<"feature "<<ids[i]<<" is out of board!"<<endl;
                 //         }
                 //     }
+                    // if(0 && ids[i]==4){
+                    //     // cout<<"feature_tracker.cpp: feature id 2 left: "<<cur_pts[i].x<<", "<<cur_pts[i].y<<" right: "<<pt_right.x<<" "<<pt_right.y<<" depth: "<<d<<endl;
+                    //     cout<<"feature_tracker.cpp: feature id 2 un_pt: "<<cur_un_pts[i].x<<", "<<cur_un_pts[i].y<<" depth: "<<d<<endl;
+                    //     cout <<"un_pt_right: "<<un_pt_right.x<<", "<<un_pt_right.y<<endl;
+                    // }
 
                 } 
 

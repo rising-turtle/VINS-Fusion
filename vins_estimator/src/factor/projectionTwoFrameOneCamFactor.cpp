@@ -72,7 +72,7 @@ bool ProjectionTwoFrameOneCamFactor::Evaluate(double const *const *parameters, d
     double dep_j = pts_camera_j.z();
     residual = (pts_camera_j / dep_j).head<2>() - pts_j_td.head<2>();
 #endif
-
+    
     residual = sqrt_info * residual;
 
     if (jacobians)

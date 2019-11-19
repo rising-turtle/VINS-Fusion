@@ -117,8 +117,8 @@ void printStatistics(const Estimator &estimator, double t)
     if (estimator.solver_flag != Estimator::SolverFlag::NON_LINEAR)
         return;
     //printf("position: %f, %f, %f\r", estimator.Ps[WINDOW_SIZE].x(), estimator.Ps[WINDOW_SIZE].y(), estimator.Ps[WINDOW_SIZE].z());
-    ROS_DEBUG_STREAM("position: " << estimator.Ps[WINDOW_SIZE].transpose());
-    ROS_DEBUG_STREAM("orientation: " << estimator.Vs[WINDOW_SIZE].transpose());
+    // ROS_DEBUG_STREAM("position: " << estimator.Ps[WINDOW_SIZE].transpose());
+    // ROS_DEBUG_STREAM("orientation: " << estimator.Vs[WINDOW_SIZE].transpose());
     if (ESTIMATE_EXTRINSIC)
     {
         cv::FileStorage fs(EX_CALIB_RESULT_PATH, cv::FileStorage::WRITE);
@@ -145,12 +145,12 @@ void printStatistics(const Estimator &estimator, double t)
     static int sum_of_calculation = 0;
     sum_of_time += t;
     sum_of_calculation++;
-    ROS_DEBUG("vo solver costs: %f ms", t);
-    ROS_DEBUG("average of time %f ms", sum_of_time / sum_of_calculation);
+    // ROS_DEBUG("vo solver costs: %f ms", t);
+    // ROS_DEBUG("average of time %f ms", sum_of_time / sum_of_calculation);
 
     sum_of_path += (estimator.Ps[WINDOW_SIZE] - last_path).norm();
     last_path = estimator.Ps[WINDOW_SIZE];
-    ROS_DEBUG("sum of path %f", sum_of_path);
+    // ROS_DEBUG("sum of path %f", sum_of_path);
     if (ESTIMATE_TD)
         ROS_INFO("td %f", estimator.td);
 }

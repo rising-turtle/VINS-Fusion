@@ -25,6 +25,7 @@ class ProjectionTwoFrameTwoCamFactor : public ceres::SizedCostFunction<2, 7, 7, 
     							   const Eigen::Vector2d &_velocity_i, const Eigen::Vector2d &_velocity_j,
     				   			   const double _td_i, const double _td_j);
     virtual bool Evaluate(double const *const *parameters, double *residuals, double **jacobians) const;
+    bool debug(double const *const *parameters, double *residuals, double **jacobians) const; 
     void check(double **parameters);
 
     Eigen::Vector3d pts_i, pts_j;

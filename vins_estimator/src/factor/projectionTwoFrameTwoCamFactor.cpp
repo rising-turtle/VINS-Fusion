@@ -10,6 +10,7 @@
  *******************************************************/
 
 #include "projectionTwoFrameTwoCamFactor.h"
+#include <iomanip>
 
 Eigen::Matrix2d ProjectionTwoFrameTwoCamFactor::sqrt_info;
 double ProjectionTwoFrameTwoCamFactor::sum_t;
@@ -39,6 +40,54 @@ ProjectionTwoFrameTwoCamFactor::ProjectionTwoFrameTwoCamFactor(const Eigen::Vect
     tangent_base.block<1, 3>(1, 0) = b2.transpose();
 #endif
 };
+
+bool ProjectionTwoFrameTwoCamFactor::debug(double const *const *parameters, double *residuals, double **jacobians) const
+{
+  TicToc tic_toc;
+    Eigen::Vector3d Pi(parameters[0][0], parameters[0][1], parameters[0][2]);
+    Eigen::Quaterniond Qi(parameters[0][6], parameters[0][3], parameters[0][4], parameters[0][5]);
+
+    Eigen::Vector3d Pj(parameters[1][0], parameters[1][1], parameters[1][2]);
+    Eigen::Quaterniond Qj(parameters[1][6], parameters[1][3], parameters[1][4], parameters[1][5]);
+
+    Eigen::Vector3d tic(parameters[2][0], parameters[2][1], parameters[2][2]);
+    Eigen::Quaterniond qic(parameters[2][6], parameters[2][3], parameters[2][4], parameters[2][5]);
+
+    Eigen::Vector3d tic2(parameters[3][0], parameters[3][1], parameters[3][2]);
+    Eigen::Quaterniond qic2(parameters[3][6], parameters[3][3], parameters[3][4], parameters[3][5]);
+
+    double inv_dep_i = parameters[4][0];
+
+    double td = parameters[5][0];
+
+    Eigen::Vector3d pts_i_td, pts_j_td;
+    pts_i_td = pts_i - (td - td_i) * velocity_i;
+    pts_j_td = pts_j - (td - td_j) * velocity_j;
+
+    Eigen::Vector3d pts_camera_i = pts_i_td / inv_dep_i;
+    Eigen::Vector3d pts_imu_i = qic * pts_camera_i + tic;
+    Eigen::Vector3d pts_w = Qi * pts_imu_i + Pi;
+    Eigen::Vector3d pts_imu_j = Qj.inverse() * (pts_w - Pj);
+    Eigen::Vector3d pts_camera_j = qic2.inverse() * (pts_imu_j - tic2);
+    Eigen::Map<Eigen::Vector2d> residual(residuals);
+
+#ifdef UNIT_SPHERE_ERROR 
+    residual =  tangent_base * (pts_camera_j.normalized() - pts_j_td.normalized());
+#else
+    double dep_j = pts_camera_j.z();
+    residual = (pts_camera_j / dep_j).head<2>() - pts_j_td.head<2>();
+
+    std::cout<<"pts_camera_j: "<<pts_camera_j.transpose()<<" pts_j_td: "<<pts_j_td.transpose()<<std::endl; 
+    std::cout<<"residual: "<<residual.transpose()<<std::endl;
+#endif
+
+    residual = sqrt_info * residual;
+
+    std::cout<<"in factor residual: "<<residual.transpose()<<std::endl;
+
+    return true;
+}
+
 
 bool ProjectionTwoFrameTwoCamFactor::Evaluate(double const *const *parameters, double *residuals, double **jacobians) const
 {
