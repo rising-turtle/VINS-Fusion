@@ -366,7 +366,7 @@ void FeatureManager::triangulate(int frameCnt, Vector3d Ps[], Matrix3d Rs[], Vec
             localPoint = leftPose.leftCols<3>() * point3d + leftPose.rightCols<1>();
             float depth = localPoint.z();
 
-            depth = 0.1/( it_per_id.feature_per_frame[0].point(0) - it_per_id.feature_per_frame[0].pointRight(0)); 
+            // depth = 0.1/( it_per_id.feature_per_frame[0].point(0) - it_per_id.feature_per_frame[0].pointRight(0)); 
 
             // if(frameCnt ==6 && it_per_id.feature_id == 540){
             //     cout <<" feature_manager.cpp: debug feature_id = 1"<<endl; 
@@ -517,7 +517,7 @@ void FeatureManager::removeOutlier(set<int> &outlierIndex)
         if(itSet != outlierIndex.end())
         {
             feature.erase(it);
-            printf("remove outlier %d \n", index);
+            // printf("remove outlier %d \n", index);
         }
     }
 }

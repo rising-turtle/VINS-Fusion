@@ -439,13 +439,13 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                     cv::Point2f pt_right = cur_pts[i];
                     pt_right.x = cur_pts[i].x - mbf/d; // mbf = b*fx, b: rig lennth 
 
-                    cv::Point2f un_pt_right = cur_un_pts[i]; 
-                    un_pt_right.x = cur_un_pts[i].x - 0.1/d; 
+                    //cv::Point2f un_pt_right = cur_un_pts[i]; 
+                    //un_pt_right.x = cur_un_pts[i].x - 0.1/d; 
 
                     if(inBorder(pt_right)){
                         ids_right.push_back(ids[i]);
                         cur_right_pts.push_back(pt_right);
-                        cur_un_right_pts.push_back(un_pt_right);
+                        // cur_un_right_pts.push_back(un_pt_right);
                     }
                 // if(ids[i] == 152 || ids[i] == 196){
                 //     Eigen::Vector3d b;
@@ -465,11 +465,11 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
                 //             cout<<"feature "<<ids[i]<<" is out of board!"<<endl;
                 //         }
                 //     }
-                    if(0 && ids[i]==4){
-                        // cout<<"feature_tracker.cpp: feature id 2 left: "<<cur_pts[i].x<<", "<<cur_pts[i].y<<" right: "<<pt_right.x<<" "<<pt_right.y<<" depth: "<<d<<endl;
-                        cout<<"feature_tracker.cpp: feature id 2 un_pt: "<<cur_un_pts[i].x<<", "<<cur_un_pts[i].y<<" depth: "<<d<<endl;
-                        cout <<"un_pt_right: "<<un_pt_right.x<<", "<<un_pt_right.y<<endl;
-                    }
+                    // if(0 && ids[i]==4){
+                    //     // cout<<"feature_tracker.cpp: feature id 2 left: "<<cur_pts[i].x<<", "<<cur_pts[i].y<<" right: "<<pt_right.x<<" "<<pt_right.y<<" depth: "<<d<<endl;
+                    //     cout<<"feature_tracker.cpp: feature id 2 un_pt: "<<cur_un_pts[i].x<<", "<<cur_un_pts[i].y<<" depth: "<<d<<endl;
+                    //     cout <<"un_pt_right: "<<un_pt_right.x<<", "<<un_pt_right.y<<endl;
+                    // }
 
                 } 
 
@@ -477,7 +477,7 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
 
             }
 
-            // cur_un_right_pts = undistortedPts(cur_right_pts, m_camera[1]);
+            cur_un_right_pts = undistortedPts(cur_right_pts, m_camera[1]);
             right_pts_velocity = ptsVelocity(ids_right, cur_un_right_pts, cur_un_right_pts_map, prev_un_right_pts_map);
             
 

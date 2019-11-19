@@ -579,8 +579,8 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
 
         if (! MULTIPLE_THREAD)
         {
-            // featureTracker.removeOutliers(removeIndex);
-            // predictPtsInNextFrame();
+            featureTracker.removeOutliers(removeIndex);
+            predictPtsInNextFrame();
         }
             
         // ROS_DEBUG("solver costs: %fms", t_solve.toc());
@@ -1087,8 +1087,8 @@ void Estimator::optimization(bool debug)
     {
         // construct new marginlization_factor
         MarginalizationFactor *marginalization_factor = new MarginalizationFactor(last_marginalization_info);
-        // problem.AddResidualBlock(marginalization_factor, NULL,
-        //                         last_marginalization_parameter_blocks);
+        ceres::ResidualBlockId fid = problem.AddResidualBlock(marginalization_factor, NULL,
+                                 last_marginalization_parameter_blocks);
         //for(int i=0; i<last_marginalization_parameter_blocks.size(); i++)
             // printf("estimator.cpp: last_marginalization_info block %d pointer: %p \n", last_marginalization_parameter_blocks[i]);
     }
@@ -2009,6 +2009,9 @@ void Estimator::outliersRejection(set<int> &removeIndex)
                 //printf("tmp_error %f\n", FOCAL_LENGTH / 1.5 * tmp_error);
             }
             // need to rewrite projecton factor.........
+            // for stereo 
+            // if(STEREO && it_per_frame.is_stereo)
+            // for rgbd 
             if(0 && STEREO && it_per_frame.is_stereo)
             {
                 
