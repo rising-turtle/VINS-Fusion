@@ -407,7 +407,7 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
         //    <<" angular_velocity: "<<angular_velocity.transpose()<<endl;
         pre_integrations[frame_count]->push_back(dt, linear_acceleration, angular_velocity);
         //if(solver_flag != NON_LINEAR)
-            tmp_pre_integration->push_back(dt, linear_acceleration, angular_velocity);
+        tmp_pre_integration->push_back(dt, linear_acceleration, angular_velocity);
 
         dt_buf[frame_count].push_back(dt);
         linear_acceleration_buf[frame_count].push_back(linear_acceleration);

@@ -8,6 +8,7 @@
  *******************************************************/
 
 #include "visualization.h"
+#include <cmath>
 
 using namespace ros;
 using namespace Eigen;
@@ -158,6 +159,9 @@ void pubOdometry(const Estimator &estimator, const std_msgs::Header &header)
 {
     if (estimator.solver_flag == Estimator::SolverFlag::NON_LINEAR)
     {
+        static Quaterniond pre_q(1., 0, 0, 0); 
+        static Eigen::Vector3d pre_t, cur_t; 
+
         nav_msgs::Odometry odometry;
         odometry.header = header;
         odometry.header.frame_id = "world";
@@ -175,6 +179,20 @@ void pubOdometry(const Estimator &estimator, const std_msgs::Header &header)
         odometry.twist.twist.linear.y = estimator.Vs[WINDOW_SIZE].y();
         odometry.twist.twist.linear.z = estimator.Vs[WINDOW_SIZE].z();
         pub_odometry.publish(odometry);
+
+        cur_t(0) = odometry.pose.pose.position.x; 
+        cur_t(1) = odometry.pose.pose.position.y; 
+        cur_t(2) = odometry.pose.pose.position.z; 
+
+        Quaterniond dq = pre_q.inverse()*tmp_Q; 
+        Eigen::Vector3d dp = cur_t - pre_t; 
+
+        double angle_distance = pre_q.angularDistance(tmp_Q)*180./M_PI; 
+        ROS_WARN("visualization.cpp: at timestamp %lf position change: %lf, angular change: %lf ",
+                 header.stamp.toSec(), dp.norm(), angle_distance);
+
+        pre_q = tmp_Q; 
+        pre_t = cur_t;
 
         geometry_msgs::PoseStamped pose_stamped;
         pose_stamped.header = header;
