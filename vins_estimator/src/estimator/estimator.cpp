@@ -1087,8 +1087,16 @@ void Estimator::optimization(bool debug)
     {
         // construct new marginlization_factor
         MarginalizationFactor *marginalization_factor = new MarginalizationFactor(last_marginalization_info);
+
+
+        // std::vector<ResidualBlockInfo *>& facs = marginalization_factor->marginalization_info->factors; 
+        // for(int i=0; i<facs.size(); i++){
+        //     cout<<" factor: "<<i<<" residual: "<<facs[i]->residuals.transpose()<<endl;
+        // }
+
         ceres::ResidualBlockId fid = problem.AddResidualBlock(marginalization_factor, NULL,
-                                 last_marginalization_parameter_blocks);
+                                last_marginalization_parameter_blocks);
+
         //for(int i=0; i<last_marginalization_parameter_blocks.size(); i++)
             // printf("estimator.cpp: last_marginalization_info block %d pointer: %p \n", last_marginalization_parameter_blocks[i]);
     }
@@ -1313,6 +1321,8 @@ void Estimator::optimization(bool debug)
                 if (it_per_id.used_num < 4)
                     continue;
 
+                // if(feature_index > 1) break;
+
                 ++feature_index;
 
                 int imu_i = it_per_id.start_frame, imu_j = imu_i - 1;
@@ -1339,12 +1349,19 @@ void Estimator::optimization(bool debug)
                         Vector3d pts_j_right = it_per_frame.pointRight;
                         if(imu_i != imu_j)
                         {
-                            ProjectionTwoFrameTwoCamFactor *f = new ProjectionTwoFrameTwoCamFactor(pts_i, pts_j_right, it_per_id.feature_per_frame[0].velocity, it_per_frame.velocityRight,
+                            Vector2d feat_velocity(0, 0); 
+
+                            ProjectionTwoFrameTwoCamFactor *f = new ProjectionTwoFrameTwoCamFactor(pts_i, pts_j_right, feat_velocity, feat_velocity, /*it_per_id.feature_per_frame[0].velocity, it_per_frame.velocityRight,*/
                                                                           it_per_id.feature_per_frame[0].cur_td, it_per_frame.cur_td);
                             ResidualBlockInfo *residual_block_info = new ResidualBlockInfo(f, loss_function,
                                                                                            vector<double *>{para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]},
                                                                                            vector<int>{0, 4});
                             marginalization_info->addResidualBlockInfo(residual_block_info);
+                            
+                            // residual_block_info->Evaluate();
+                            // cout<<"feature_index: "<<feature_index<<" depth: "<<para_Feature[feature_index][0]<<" imu_i: "<<imu_i<<" imu_j: "<<imu_j<<endl; 
+                            // cout<<"factor residual: "<<residual_block_info->residuals.transpose()<<endl;
+                            // cout<<"factor jacobian_j(4): "<<residual_block_info->jacobians[4]<<endl;
                         }
                         else
                         {
