@@ -412,7 +412,7 @@ void Estimator::processIMU(double t, double dt, const Vector3d &linear_accelerat
         //    <<" angular_velocity: "<<angular_velocity.transpose()<<endl;
         pre_integrations[frame_count]->push_back(dt, linear_acceleration, angular_velocity);
         //if(solver_flag != NON_LINEAR)
-            tmp_pre_integration->push_back(dt, linear_acceleration, angular_velocity);
+        tmp_pre_integration->push_back(dt, linear_acceleration, angular_velocity);
 
         dt_buf[frame_count].push_back(dt);
         linear_acceleration_buf[frame_count].push_back(linear_acceleration);
@@ -1088,7 +1088,6 @@ void Estimator::optimization(bool debug)
         // construct new marginlization_factor
         MarginalizationFactor *marginalization_factor = new MarginalizationFactor(last_marginalization_info);
 
-
         // std::vector<ResidualBlockInfo *>& facs = marginalization_factor->marginalization_info->factors; 
         // for(int i=0; i<facs.size(); i++){
         //     cout<<" factor: "<<i<<" residual: "<<facs[i]->residuals.transpose()<<endl;
@@ -1281,8 +1280,11 @@ void Estimator::optimization(bool debug)
     TicToc t_whole_marginalization;
     if (marginalization_flag == MARGIN_OLD)
     {
+        int cnt_factors = 0; 
         MarginalizationInfo *marginalization_info = new MarginalizationInfo();
         vector2double();
+
+        ROS_INFO("before marginalization: number of feature: %d", f_manager.getFeatureCount());
 
         if (last_marginalization_info && last_marginalization_info->valid)
         {
@@ -1299,6 +1301,7 @@ void Estimator::optimization(bool debug)
                                                                            last_marginalization_parameter_blocks,
                                                                            drop_set);
             marginalization_info->addResidualBlockInfo(residual_block_info);
+            ++cnt_factors;
         }
 
         if(USE_IMU)
@@ -1310,6 +1313,7 @@ void Estimator::optimization(bool debug)
                                                                            vector<double *>{para_Pose[0], para_SpeedBias[0], para_Pose[1], para_SpeedBias[1]},
                                                                            vector<int>{0, 1});
                 marginalization_info->addResidualBlockInfo(residual_block_info);
+                ++cnt_factors;
             }
         }
 
@@ -1343,6 +1347,7 @@ void Estimator::optimization(bool debug)
                                                                                         vector<double *>{para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index], para_Td[0]},
                                                                                         vector<int>{0, 3});
                         marginalization_info->addResidualBlockInfo(residual_block_info);
+                        ++cnt_factors;
                     }
                     if(STEREO && it_per_frame.is_stereo)
                     {
@@ -1357,11 +1362,7 @@ void Estimator::optimization(bool debug)
                                                                                            vector<double *>{para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]},
                                                                                            vector<int>{0, 4});
                             marginalization_info->addResidualBlockInfo(residual_block_info);
-                            
-                            // residual_block_info->Evaluate();
-                            // cout<<"feature_index: "<<feature_index<<" depth: "<<para_Feature[feature_index][0]<<" imu_i: "<<imu_i<<" imu_j: "<<imu_j<<endl; 
-                            // cout<<"factor residual: "<<residual_block_info->residuals.transpose()<<endl;
-                            // cout<<"factor jacobian_j(4): "<<residual_block_info->jacobians[4]<<endl;
+                            ++cnt_factors;
                         }
                         else
                         {
@@ -1371,6 +1372,7 @@ void Estimator::optimization(bool debug)
                                                                                            vector<double *>{para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]},
                                                                                            vector<int>{2});
                             marginalization_info->addResidualBlockInfo(residual_block_info);
+                            ++cnt_factors;
                         }
                     }
                 }
@@ -1379,7 +1381,7 @@ void Estimator::optimization(bool debug)
 
         TicToc t_pre_margin;
         marginalization_info->preMarginalize();
-        ROS_DEBUG("pre marginalization %f ms", t_pre_margin.toc());
+        ROS_DEBUG("pre marginalization: there is %d factors, cost %f ms",cnt_factors, t_pre_margin.toc());
         
         TicToc t_margin;
         marginalization_info->marginalize();
