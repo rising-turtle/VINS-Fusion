@@ -1354,9 +1354,9 @@ void Estimator::optimization(bool debug)
                         Vector3d pts_j_right = it_per_frame.pointRight;
                         if(imu_i != imu_j)
                         {
-                            Vector2d feat_velocity(0, 0); 
+                            // Vector2d feat_velocity(0, 0); 
 
-                            ProjectionTwoFrameTwoCamFactor *f = new ProjectionTwoFrameTwoCamFactor(pts_i, pts_j_right, feat_velocity, feat_velocity, /*it_per_id.feature_per_frame[0].velocity, it_per_frame.velocityRight,*/
+                            ProjectionTwoFrameTwoCamFactor *f = new ProjectionTwoFrameTwoCamFactor(pts_i, pts_j_right, it_per_id.feature_per_frame[0].velocity, it_per_frame.velocityRight,
                                                                           it_per_id.feature_per_frame[0].cur_td, it_per_frame.cur_td);
                             ResidualBlockInfo *residual_block_info = new ResidualBlockInfo(f, loss_function,
                                                                                            vector<double *>{para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Ex_Pose[1], para_Feature[feature_index], para_Td[0]},
