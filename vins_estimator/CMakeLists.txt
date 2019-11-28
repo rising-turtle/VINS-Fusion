@@ -56,9 +56,10 @@ add_library(vins_lib
     src/initial/initial_aligment.cpp
     src/initial/initial_sfm.cpp
     src/initial/initial_ex_rotation.cpp
-    src/featureTracker/feature_tracker.cpp
-    src/featureTracker/feature_tracker_people_mask.cpp)
-target_link_libraries(vins_lib mask_people ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+    src/featureTracker/feature_tracker.cpp)
+    # src/featureTracker/feature_tracker_people_mask.cpp)
+# target_link_libraries(vins_lib mask_people ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
+target_link_libraries(vins_lib ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 add_executable(vins_node_dpt src/rosNodeTestDpt.cpp)
 target_link_libraries(vins_node_dpt vins_lib)
