@@ -1088,16 +1088,16 @@ void Estimator::optimization(bool debug)
         // construct new marginlization_factor
         MarginalizationFactor *marginalization_factor = new MarginalizationFactor(last_marginalization_info);
 
-        // std::vector<ResidualBlockInfo*>& facs = marginalization_factor->marginalization_info->factors;
+        // std::vector<ResidualBlockInfo *>& facs = marginalization_factor->marginalization_info->factors; 
         // for(int i=0; i<facs.size(); i++){
-        //    cout<<" factor: "<<i<<" residal: "<<facs[i]->residuals.transpose()<<endl;
+        //     cout<<" factor: "<<i<<" residual: "<<facs[i]->residuals.transpose()<<endl;
         // }
 
-
         ceres::ResidualBlockId fid = problem.AddResidualBlock(marginalization_factor, NULL,
-                                 last_marginalization_parameter_blocks);
-        // for(int i=0; i<last_marginalization_parameter_blocks.size(); i++)
-            // printf("estimator.cpp: lastlastlast_marginalization_info_marginalization_infolast_marginalization_info_marginalization_info block %d pointer: %p \n", last_marginalization_parameter_blocks[i]);
+                                last_marginalization_parameter_blocks);
+
+        //for(int i=0; i<last_marginalization_parameter_blocks.size(); i++)
+            // printf("estimator.cpp: last_marginalization_info block %d pointer: %p \n", last_marginalization_parameter_blocks[i]);
     }
     if(USE_IMU)
     {
@@ -1325,6 +1325,8 @@ void Estimator::optimization(bool debug)
                 if (it_per_id.used_num < 4)
                     continue;
 
+                // if(feature_index > 1) break;
+
                 ++feature_index;
 
                 int imu_i = it_per_id.start_frame, imu_j = imu_i - 1;
@@ -1352,6 +1354,8 @@ void Estimator::optimization(bool debug)
                         Vector3d pts_j_right = it_per_frame.pointRight;
                         if(imu_i != imu_j)
                         {
+                            // Vector2d feat_velocity(0, 0); 
+
                             ProjectionTwoFrameTwoCamFactor *f = new ProjectionTwoFrameTwoCamFactor(pts_i, pts_j_right, it_per_id.feature_per_frame[0].velocity, it_per_frame.velocityRight,
                                                                           it_per_id.feature_per_frame[0].cur_td, it_per_frame.cur_td);
                             ResidualBlockInfo *residual_block_info = new ResidualBlockInfo(f, loss_function,
