@@ -1,3 +1,9 @@
+To run VINS-Fusion using structure core's data by:
+
+1. enter the launch foloder  
+2. roslaunch vins_struct_core_v2.launch  
+3. publish structure core's bag file by: rosbag play xx.bag
+
 # VINS-Fusion
 ## An optimization-based multi-sensor state estimator
 
