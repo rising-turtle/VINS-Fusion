@@ -38,6 +38,8 @@ Panels:
       Expanded: ~
       Splitter Ratio: 0.5
     Tree Height: 360
+Toolbars:
+  toolButtonStyle: 2
 Visualization Manager:
   Class: ""
   Displays:
@@ -256,7 +258,7 @@ Visualization Manager:
           Color: 0; 255; 0
           Color Transformer: FlatColor
           Decay Time: 100
-          Enabled: true
+          Enabled: false
           Invert Rainbow: false
           Max Color: 255; 255; 255
           Max Intensity: 4096
@@ -273,7 +275,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Class: rviz/Image
           Enabled: true
           Image Topic: /vins_estimator/image_track
@@ -388,25 +390,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 1.56258488
+      Distance: 92.4043579
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -4.27435684
-        Y: -0.957011461
-        Z: 0.381432295
+        X: -0.0772385597
+        Y: -0.464261293
+        Z: 0.381432056
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.0500000007
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 0.0802039281
+      Pitch: 1.56979632
       Target Frame: world
       Value: ThirdPersonFollower (rviz)
-      Yaw: 3.13380194
+      Yaw: 5.84380388
     Saved: ~
 Window Geometry:
   Displays:
@@ -426,8 +428,8 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1535
-  X: 65
-  Y: 29
+  X: 234
+  Y: 63
   loop_match_Image:
     collapsed: false
   track_image:

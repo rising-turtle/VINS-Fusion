@@ -170,9 +170,9 @@ void sync_process()
 void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
 {
     double t = imu_msg->header.stamp.toSec();
-    double dx = imu_msg->linear_acceleration.x*(-9.8); // structure core's IMU's g points downward 
-    double dy = imu_msg->linear_acceleration.y*(-9.8);
-    double dz = imu_msg->linear_acceleration.z*(-9.8); // since the unit of acc is g
+    double dx = imu_msg->linear_acceleration.x*g_norm_multi; // (9.8); // -9.8 G.z()  structure core's IMU's g points downward 
+    double dy = imu_msg->linear_acceleration.y*g_norm_multi; // (9.8);
+    double dz = imu_msg->linear_acceleration.z*g_norm_multi; // (9.8); // since the unit of acc is g
     double rx = imu_msg->angular_velocity.x;
     double ry = imu_msg->angular_velocity.y;
     double rz = imu_msg->angular_velocity.z;

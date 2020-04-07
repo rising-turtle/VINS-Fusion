@@ -19,6 +19,8 @@ std::vector<Eigen::Vector3d> TIC;
 
 Eigen::Vector3d G{0.0, 0.0, 9.8};
 
+double g_norm_multi;
+
 double BIAS_ACC_THRESHOLD;
 double BIAS_GYR_THRESHOLD;
 double SOLVER_TIME;
@@ -100,7 +102,9 @@ void readParameters(std::string config_file)
         GYR_N = fsSettings["gyr_n"];
         GYR_W = fsSettings["gyr_w"];
         G.z() = fsSettings["g_norm"];
+        g_norm_multi = fsSettings["g_norm_multi"];
     }
+
 
     SOLVER_TIME = fsSettings["max_solver_time"];
     NUM_ITERATIONS = fsSettings["max_num_iterations"];
