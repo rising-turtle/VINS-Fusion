@@ -432,10 +432,13 @@ map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> FeatureTracker::trackIm
             vector<uchar> status, statusRightLeft;
             vector<float> err;
 
+            double x_scale = _img.cols / dpt.cols; 
+            double y_scale = _img.rows / dpt.rows; 
+
             for(int i=0; i<cur_pts.size(); i++){
 
-                float d = dpt.at<unsigned short>(std::round(cur_pts[i].y), std::round(cur_pts[i].x))*0.001; 
-                if(d >= 0.3 && d <= 7){
+                float d = dpt.at<unsigned short>(std::round(cur_pts[i].y/y_scale), std::round(cur_pts[i].x/x_scale))*0.001; 
+                if(d >= 0.3 && d <= 5){ // 7
                     cv::Point2f pt_right = cur_pts[i];
                     pt_right.x = cur_pts[i].x - mbf/d; // mbf = b*fx, b: rig lennth 
 
